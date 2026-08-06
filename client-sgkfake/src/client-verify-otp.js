@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             alert(data.message || 'Mật khẩu mới đã được cập nhật thành công!');
             sessionStorage.removeItem('resetEmail');
-            window.location.href = '/sign-in.html';
+            window.location.href = '/pages/sign-in.html';
         } catch (error) {
             console.error('Verify OTP error:', error);
             alert(error.message || 'Đã xảy ra lỗi khi xác thực OTP.');

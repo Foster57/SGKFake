@@ -12,6 +12,10 @@ function hashPassword(password) {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+app.get('/', (req, res) => {
+  res.redirect('/pages/index.html');
+});
+
 app.use(express.static(path.join(__dirname, '..', 'client-sgkfake')));
 app.use('/images', express.static(path.join(__dirname, '..', 'client-sgkfake', 'img', 'img-subject')));
 
@@ -225,8 +229,8 @@ app.get('/auth/google/callback', async (req, res) => {
       user = userResult.rows[0];
     }
 
-    // Đăng nhập thành công -> chuyển hướng về trang chủ
-    res.redirect(`/index.html?user=${encodeURIComponent(user.user_account)}`);
+    // Đăng nhập thành công -> chuyển hướng về trang user
+    res.redirect(`/pages/user-pages/user.html?user=${encodeURIComponent(user.user_account)}`);
   } catch (err) {
     console.error('Google Auth Error:', err);
     res.status(500).send('Lỗi máy chủ khi đăng nhập bằng Google');

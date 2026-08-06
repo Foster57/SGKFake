@@ -20,12 +20,55 @@ body {
     background: white;
 }
 
-.header-left,
-.header-right {
+.header-left {
     display: flex;
     align-items: center;
     list-style: none;
     gap: 12px;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    list-style: none;
+
+}
+
+.user-profile {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.user-profile img {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+}
+
+.user-profile i {
+    font-size: 24px;
+    border: 1px solid #4d4dff;
+    border-radius: 50%;
+    padding: 8px;
+    color: #4d4dff;
+
+}
+
+.user-profile i:hover {
+    background-color: #4d4dff;
+    color: white;
+    cursor: pointer;
+}
+
+.user-dropdown {
+    display: none;
+    transition: opacity 0.2s, visibility 0.2s;
+}
+
+.user-dropdown.show {
+    display: block;
 }
 
 .btn {
@@ -248,3 +291,5 @@ body {
     color: #64748b;
     font-size: 15px;
 }
+
+/* ===== USER PROFILE DROPDOWN ===== */

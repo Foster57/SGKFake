@@ -5,5 +5,8 @@
     "install": "npm --prefix server-sgkfake install",
     "start": "npm --prefix server-sgkfake start",
     "start:server": "npm --prefix server-sgkfake start"
+  },
+  "dependencies": {
+    "remixicon": "^4.9.1"
   }
 }

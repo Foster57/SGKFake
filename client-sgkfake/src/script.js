@@ -1,3 +1,5 @@
+// Page-BookGrid
+
 const bookGrid = document.getElementById('bookGrid');
 
 async function loadBooks(grade = 1) {
@@ -36,4 +38,20 @@ document.querySelectorAll('.menu-link').forEach(link => {
   });
 });
 
+
 loadBooks(1);
+
+// User-ProfileDropdown
+const userMenu = document.querySelector('.user-menu-wrapper');
+const userDropdown = document.querySelector('.user-dropdown');
+
+let timeoutID;
+userMenu.addEventListener('mouseenter', () => {
+  clearTimeout(timeoutID);
+  userDropdown.style.display = 'block';
+});
+userMenu.addEventListener('mouseleave', () => {
+  timeoutID = setTimeout(() => {
+    userDropdown.style.display = 'none';
+  }, 150);
+});

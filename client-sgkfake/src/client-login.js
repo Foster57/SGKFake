@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             // Đăng nhập thành công -> về trang chủ
-            window.location.href = '/index.html';
+            window.location.href = '/pages/user-pages/user.html';
         } catch (error) {
             console.error('Failed to login:', error);
             alert('Đã xảy ra lỗi khi kết nối máy chủ. Vui lòng thử lại sau.');

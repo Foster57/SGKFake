@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error(data.error || 'Yêu cầu thất bại.');
             }
             sessionStorage.setItem('resetEmail', email);
-            window.location.href = '/verify-otp.html';
+            window.location.href = '/pages/verify-otp.html';
         } catch (error) {
             console.error('Forgot password error:', error);
             alert(error.message || 'Đã xảy ra lỗi khi gửi yêu cầu.');
