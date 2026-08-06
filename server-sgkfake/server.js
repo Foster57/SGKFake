@@ -35,7 +35,7 @@ const transporter = nodemailer.createTransport({
 
 const { Pool } = require('pg');
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL || 'postgresql://localhost:5432/yourdb'
+  connectionString: process.env.DATABASE_URL
 });
 
 let bcrypt;
@@ -167,7 +167,7 @@ app.post('/api/users', async (req, res) => {
 // Google OAuth Login Route
 app.get('/auth/google', (req, res) => {
   const clientId = process.env.GOOGLE_CLIENT_ID;
-  const redirectUri = process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3000/auth/google/callback';
+  const redirectUri = process.env.GOOGLE_REDIRECT_URI;
   const scope = encodeURIComponent('email profile');
   const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${scope}&access_type=offline&prompt=consent`;
   res.redirect(googleAuthUrl);
@@ -183,7 +183,7 @@ app.get('/auth/google/callback', async (req, res) => {
   try {
     const clientId = process.env.GOOGLE_CLIENT_ID;
     const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-    const redirectUri = process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3000/auth/google/callback';
+    const redirectUri = process.env.GOOGLE_REDIRECT_URI;
 
     // Đổi authorization code lấy access_token
     const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
@@ -211,7 +211,7 @@ app.get('/auth/google/callback', async (req, res) => {
     const googleUser = await userResponse.json();
 
     const email = googleUser.email;
-    const account = email ? email.split('@')[0] : `google_${googleUser.id}`;
+    const account = `${email}`;
 
     // Kiểm tra tài khoản đã tồn tại trong DB chưa
     let userResult = await pool.query(
@@ -222,7 +222,7 @@ app.get('/auth/google/callback', async (req, res) => {
     let user;
     if (userResult.rows.length === 0) {
       // Nếu chưa có, tự động tạo tài khoản mới
-      const dummyPassword = hashPassword(`google_${googleUser.id}_${Date.now()}`);
+      const dummyPassword = bcrypt ? await bcrypt.hash(`google_${googleUser.id}_${Date.now()}`, 10) : hashPassword(`google_${googleUser.id}_${Date.now()}`);
       const insertResult = await pool.query(
         `INSERT INTO users (user_account, hashpasword, email) VALUES ($1, $2, $3) RETURNING user_id, user_account, email`,
         [account, dummyPassword, email]
@@ -249,7 +249,7 @@ app.post('/api/users/forgot-password', async (req, res) => {
 
   try {
     const userResult = await pool.query(
-      'SELECT email, user_id FROM users WHERE email = $1',
+      'SELECT email, user_id FROM users WHERE LOWER(email) = LOWER($1)',
       [email]
     );
 
@@ -266,10 +266,14 @@ app.post('/api/users/forgot-password', async (req, res) => {
     });
     const expiresIn = new Date(Date.now() + 5 * 60 * 1000); // Hết hạn sau 5 phút
 
-    await pool.query(
-      'UPDATE users SET otp = $1, otp_expires_at = $2 WHERE email = $3',
+    const updateResult = await pool.query(
+      'UPDATE users SET otp = $1, otp_expires_at = $2 WHERE LOWER(email) = LOWER($3)',
       [otp, expiresIn, email]
     );
+
+    if (updateResult.rowCount === 0) {
+      return res.status(400).json({ error: 'Email không tồn tại trong hệ thống!' });
+    }
 
     await transporter.sendMail({
       from: process.env.EMAIL_USER,
@@ -296,7 +300,7 @@ app.post('/api/users/verify-otp', async (req, res) => {
 
   try {
     const verifyOTPResult = await pool.query(
-      'SELECT otp, otp_expires_at FROM users WHERE email = $1',
+      'SELECT otp, otp_expires_at FROM users WHERE LOWER(email) = LOWER($1)',
       [email]
     );
 
@@ -311,13 +315,17 @@ app.post('/api/users/verify-otp', async (req, res) => {
     }
 
     if (new Date() > new Date(user.otp_expires_at)) {
+      await pool.query(
+        'UPDATE users SET otp = NULL, otp_expires_at = NULL WHERE LOWER(email) = LOWER($1)',
+        [email]
+      );
       return res.status(400).json({ error: 'Mã OTP đã hết hạn' });
     }
 
     if (newPassword) {
       const hashedPassword = bcrypt ? await bcrypt.hash(newPassword, 10) : hashPassword(newPassword);
       await pool.query(
-        'UPDATE users SET hashpasword = $1, otp = NULL, otp_expires_at = NULL WHERE email = $2',
+        'UPDATE users SET hashpasword = $1, otp = NULL, otp_expires_at = NULL WHERE LOWER(email) = LOWER($2)',
         [hashedPassword, email]
       );
       return res.json({ message: 'Đặt lại mật khẩu mới thành công!' });
@@ -329,6 +337,15 @@ app.post('/api/users/verify-otp', async (req, res) => {
     res.status(500).json({ error: 'Lỗi máy chủ khi xác thực OTP' });
   }
 });
+
+// Tự động dọn dẹp các OTP hết hạn trong DB sau mỗi 1 phút
+setInterval(async () => {
+  try {
+    await pool.query('UPDATE users SET otp = NULL, otp_expires_at = NULL WHERE otp_expires_at < NOW()');
+  } catch (err) {
+    console.error('Lỗi dọn dẹp OTP hết hạn:', err);
+  }
+}, 60 * 1000);
 
 // Start server
 const PORT = process.env.PORT || 3000;
