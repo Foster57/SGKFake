@@ -49,6 +49,9 @@ try {
   }
 }
 
+// Nạp các router phụ sau khi app, pool, bcrypt đã khởi tạo
+require('./src/user/resetpassword')(app, pool, bcrypt, hashPassword);
+
 // GET /api/books?grade=1&subject=toan&type=sgk
 app.get('/api/books', async (req, res) => {
   const { grade, subject, type } = req.query;

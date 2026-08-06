@@ -1,29 +1,59 @@
-app.post('/api/user/change-password', async (req, res) => {
-    const oldPassword = req.body.oldPassword;
-    const newPassword = req.body.newPassword;
-    const confirmNewPassword = req.body.confirmNewPassword;
+module.exports = function (app, pool, bcrypt, hashPassword) {
+    app.post('/api/user/reset-password', async (req, res) => {
+        const { user_account, account, oldPassword, newPassword, confirmPassword } = req.body;
+        const username = user_account || account || req.body.username;
 
-    if (!oldPassword || !newPassword || !confirmNewPassword) {
-        return res.status(400).json({ error: 'All fields are required' });
-    }
-    try {
-        let comparePassword = await bcrypt.compare(oldPassword, req.body.hashpasword);
-        if (!comparePassword) {
-            return res.status(400).json({ error: 'Old password is incorrect' });
+        if (!oldPassword || !newPassword || !confirmPassword) {
+            return res.status(400).json({ error: 'Vui lòng nhập đầy đủ các trường thông tin' });
         }
-        let hashedPassword = hashPassword(newPassword);
-        if (newPassword !== confirmNewPassword) {
-            return res.status(400).json({ error: 'Passwords do not match' });
+
+        if (newPassword !== confirmPassword) {
+            return res.status(400).json({ error: 'Mật khẩu mới và mật khẩu xác nhận không khớp' });
         }
-        let result = await pool.query(
-            `UPDATE users SET hashpasword = $1 WHERE user_account = $2 RETURNING user_id, user_account, email`,
-            [hashedPassword, req.body.user_account]
-        );
-        res.status(200).json(result.rows[0]);
-    } catch (error) {
-        console.error('DB query error:', error);
-        res.status(500).json({ error: 'Database error' });
-    }
-    window.location.href = '/pages/user-pages/user.html';
-    window.location.reload();
-});
+
+        try {
+            let queryText = 'SELECT user_id, user_account, hashpasword FROM users';
+            let queryParams = [];
+
+            if (username) {
+                queryText += ' WHERE user_account = $1';
+                queryParams.push(username);
+            }
+
+            const result = await pool.query(queryText, queryParams);
+            if (result.rows.length === 0) {
+                return res.status(404).json({ error: 'Không tìm thấy người dùng' });
+            }
+
+            let targetUser = null;
+            for (const u of result.rows) {
+                let isMatch = false;
+                if (bcrypt) {
+                    isMatch = await bcrypt.compare(oldPassword, u.hashpasword);
+                } else {
+                    const hash = hashPassword(oldPassword);
+                    isMatch = (u.hashpasword === hash || u.hashpasword === oldPassword);
+                }
+                if (isMatch) {
+                    targetUser = u;
+                    break;
+                }
+            }
+
+            if (!targetUser) {
+                return res.status(400).json({ error: 'Mật khẩu cũ không chính xác' });
+            }
+
+            const hashedPassword = bcrypt ? await bcrypt.hash(newPassword, 10) : hashPassword(oldPassword);
+            await pool.query(
+                'UPDATE users SET hashpasword = $1 WHERE user_id = $2',
+                [hashedPassword, targetUser.user_id]
+            );
+
+            return res.status(200).json({ message: 'Đặt lại mật khẩu thành công!' });
+        } catch (error) {
+            console.error('Reset password error:', error);
+            return res.status(500).json({ error: 'Lỗi máy chủ khi đổi mật khẩu' });
+        }
+    });
+};
