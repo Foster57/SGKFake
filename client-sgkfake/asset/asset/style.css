@@ -1,0 +1,250 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: "Be Vietnam Pro", Arial, sans-serif;
+    font-size: 16px;
+    background: #f8fafc;
+    color: #0f172a;
+}
+
+/* ===== HEADER ===== */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+    background: white;
+}
+
+.header-left,
+.header-right {
+    display: flex;
+    align-items: center;
+    list-style: none;
+    gap: 12px;
+}
+
+.btn {
+    text-decoration: none;
+    color: #334155;
+    font-weight: bold;
+    padding: 8px 14px;
+    border-radius: 8px;
+}
+
+.btn-outline {
+    border: 1px solid #cbd5e1;
+    color: #f5821f;
+}
+
+.btn-solid {
+    background: #f19063;
+    color: white;
+    border: none;
+}
+
+.btn-link {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+    color: #f5821f;
+    font-weight: bold;
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    padding: 8px 14px;
+}
+
+
+.banner img {
+    width: 100%;
+    display: block;
+}
+
+
+.menu-section {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 20px 24px;
+}
+
+.menu-list {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    list-style: none;
+}
+
+.menu-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    font-weight: bold;
+    padding: 10px 18px;
+    border-radius: 10px;
+    border: 2px solid transparent;
+    transition: all 0.2s ease;
+}
+
+/* Nhóm màu theo lớp */
+.menu-list li:nth-child(-n+5) .menu-link {
+    background-color: #fde3d0;
+    color: #e8730a;
+}
+
+.menu-list li:nth-child(n+6):nth-child(-n+9) .menu-link {
+    background-color: #d3f5e3;
+    color: #1ba861;
+}
+
+.menu-list li:nth-child(n+10) .menu-link {
+    background-color: #dcdcf9;
+    color: #4d4dc9;
+}
+
+.menu-link:hover {
+    background-color: transparent;
+    border: 2px solid #4d4dff;
+}
+
+.menu-link.active {
+    border: 2px solid #4d4dff;
+    position: relative;
+}
+
+.menu-link.active::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: -12px;
+    transform: translateX(-50%);
+    width: 24px;
+    height: 3px;
+    background-color: #4d4dff;
+    border-radius: 2px;
+}
+
+/* ===== MAIN CONTENT LAYOUT ===== */
+.main-content {
+    display: flex;
+    align-items: flex-start;
+    gap: 24px;
+    padding: 0 24px 24px;
+}
+
+/* ===== SIDEBAR ===== */
+.sidebar-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    width: 260px;
+    flex-shrink: 0;
+}
+
+.sidebar-box {
+    display: flex;
+    flex-direction: column;
+    background: white;
+    border: 1px solid #e5e5e5;
+    border-radius: 12px;
+    width: 100%;
+    overflow: hidden;
+}
+
+.sidebar-title {
+    font-weight: bold;
+    font-size: 18px;
+    color: #222;
+    padding: 12px 16px;
+    border-bottom: 1px solid #e5e5e5;
+}
+
+.sidebar-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 8px;
+}
+
+.sidebar-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    color: #334155;
+    padding: 10px 12px;
+    border-radius: 8px;
+}
+
+.sidebar-item:hover {
+    background-color: #f5f5f5;
+}
+
+.sidebar-item.active {
+    background-color: #ecf0ff;
+    color: #6366f1;
+    font-weight: bold;
+}
+
+/* ===== BOOK SECTION & GRID ===== */
+.book-section {
+    flex: 1;
+    min-width: 0;
+}
+
+.book-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 24px;
+    align-items: start;
+    justify-items: start;
+}
+
+.book-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 12px;
+    width: 100%;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.book-item:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.book-item img {
+    width: 100%;
+    height: 240px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.book-item-title {
+    margin-top: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e293b;
+    text-align: center;
+    line-height: 1.4;
+}
+
+.empty-state {
+    grid-column: 1 / -1;
+    padding: 24px;
+    color: #64748b;
+    font-size: 15px;
+}

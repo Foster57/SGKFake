@@ -1,0 +1,9 @@
+{
+  "name": "sgkfake",
+  "private": true,
+  "scripts": {
+    "install": "npm --prefix server-sgkfake install",
+    "start": "npm --prefix server-sgkfake start",
+    "start:server": "npm --prefix server-sgkfake start"
+  }
+}
