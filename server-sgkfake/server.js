@@ -74,8 +74,11 @@ app.get('/api/books', async (req, res) => {
   const params = [gradeNum];
 
   if (subject) {
-    params.push(subject);
-    query += ` AND s.slug = $${params.length}`;
+    const subjectID = parseInt(subject, 10);
+    if (!isNaN(subjectID)) {
+      params.push(subjectID)
+      query += ` AND b.subject_id = $${params.length}`;
+    }
   }
   if (type) {
     params.push(type);
