@@ -1,10 +1,20 @@
 // Page-BookGrid
 
 const bookGrid = document.getElementById('bookGrid');
+let currentGrade = 1;
+let currentSubject = '';
 
-async function loadBooks(grade = 1) {
+async function loadBooks(grade = currentGrade, subject = currentSubject) {
   try {
-    const response = await fetch(`/api/books?grade=${encodeURIComponent(grade)}`);
+    currentGrade = grade;
+    currentSubject = subject;
+    console.log(currentGrade, currentSubject);
+    let url = `/api/books?grade=${encodeURIComponent(grade)}`;
+    if (subject) {
+      url += `&subject=${encodeURIComponent(subject)}`;
+    }
+
+    const response = await fetch(url);
     if (!response.ok) {
       throw new Error(`Server error ${response.status}`);
     }
@@ -22,7 +32,7 @@ async function loadBooks(grade = 1) {
             </a>
           `;
       }).join('')
-      : '<p class="empty-state">Không tìm thấy sách cho lớp này.</p>';
+      : '<p class="empty-state">Không có sách cần tìm.</p>';
   } catch (error) {
     console.error('Failed to load books:', error);
     bookGrid.innerHTML = '<p class="empty-state">Lỗi khi tải sách. Vui lòng thử lại sau.</p>';
@@ -34,12 +44,26 @@ document.querySelectorAll('.menu-link').forEach(link => {
     e.preventDefault();
     document.querySelectorAll('.menu-link').forEach(l => l.classList.remove('active'));
     link.classList.add('active');
-    loadBooks(link.dataset.grade);
+    loadBooks(link.dataset.grade, currentSubject);
   });
 });
 
+document.querySelectorAll('.subject-link').forEach(link => {
+  link.addEventListener('click', (e) => {
+    e.preventDefault();
+    const selectedSubject = link.dataset.subject;
+    if (link.classList.contains('active')) {
+      link.classList.remove('active');
+      loadBooks(currentGrade, '');
+    } else {
+      document.querySelectorAll('.subject-link').forEach(l => l.classList.remove('active'));
+      link.classList.add('active');
+      loadBooks(currentGrade, selectedSubject);
+    }
+  });
+});
 
-loadBooks(1);
+loadBooks(1, '');
 
 // User-ProfileDropdown
 const userMenu = document.querySelector('.user-menu-wrapper');
