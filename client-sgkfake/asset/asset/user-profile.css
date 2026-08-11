@@ -1,0 +1,26 @@
+.profile-container {
+    width: 100%;
+    max-width: 420px;
+    padding: 20px;
+    box-sizing: border-box;
+    margin: 100px auto;
+    background-color: #fff;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #181525;
+    font-size: 24px;
+}
+
+.profile-info {
+    margin-bottom: 15px;
+}
+
+.profile-info label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #5c4790;
+}

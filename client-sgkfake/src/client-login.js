@@ -17,16 +17,28 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            const response = await fetch(`/api/users?user_account=${encodeURIComponent(account)}&hashpasword=${encodeURIComponent(password)}`);
-            if (!response.ok) {
-                throw new Error(`Server error ${response.status}`);
-            }
+            const response = await fetch('/api/users/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ account, password })
+            });
 
-            const users = await response.json();
-            if (!users || users.length === 0) {
-                alert('Mật khẩu hoặc tài khoản không chính xác! Vui lòng nhập lại.');
+            const result = await response.json();
+
+            if (!response.ok) {
+                alert(result.error || 'Đăng nhập thất bại! Vui lòng kiểm tra lại thông tin.');
                 if (passwordInput) passwordInput.value = '';
                 return;
+            }
+
+            // Lưu token và thông tin người dùng vào localStorage
+            if (result.token) {
+                localStorage.setItem('token', result.token);
+            }
+            if (result.user) {
+                localStorage.setItem('userData', JSON.stringify(result.user));
             }
 
             // Đăng nhập thành công -> về trang chủ
