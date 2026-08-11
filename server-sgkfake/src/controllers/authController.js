@@ -173,8 +173,6 @@ async function forgotPassword(req, res) {
       text: `Mã OTP của bạn là: ${otp}`
     });
 
-    console.log(`[OTP CREATED] Email: ${email} | OTP: ${otp} | Expires: ${expiresIn.toISOString()}`);
-
     res.json({ message: 'Mã OTP đã được gửi đến email của bạn. Vui lòng kiểm tra hộp thư!', email });
   } catch (err) {
     console.error('Forgot password error:', err);
@@ -292,8 +290,13 @@ async function googleAuthCallback(req, res) {
     } else {
       user = userResult.rows[0];
     }
-
-    res.redirect(`/pages/user-pages/user.html?user=${encodeURIComponent(user.user_account)}`);
+    const secretKey = process.env.JWT_SECRET || 'sgkfake_secret_key_2026';
+    const token = jwt.sign(
+      { id: user.user_id, account: user.user_account, email: user.email },
+      secretKey,
+      { expiresIn: '24h' }
+    );
+    res.redirect(`/pages/user-pages/user.html?token=${token}&user=${encodeURIComponent(user.user_account)}`);
   } catch (err) {
     console.error('Google Auth Error:', err);
     res.status(500).send('Lỗi máy chủ khi đăng nhập bằng Google');

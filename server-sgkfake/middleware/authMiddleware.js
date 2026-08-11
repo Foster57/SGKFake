@@ -13,7 +13,8 @@ function authenticate(req, res, next) {
         req.userAccount = decoded.account;
         req.userEmail = decoded.email;
         req.userRole = decoded.role || 'user';
-
+        const oke = jwt.decode(token);
+        console.log(oke);
         next();
     } catch (err) {
         return res.status(403).json({ error: 'Token không hợp lệ hoặc đã hết hạn' });
