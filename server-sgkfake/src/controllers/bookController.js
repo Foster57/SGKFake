@@ -22,10 +22,13 @@ async function getBooks(req, res) {
   const params = [gradeNum];
 
   if (subject) {
-    const subjectID = parseInt(subject, 10);
-    if (!isNaN(subjectID)) {
-      params.push(subjectID);
+    const subjects = String(subject).split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
+    if (subjects.length === 1) {
+      params.push(subjects[0]);
       query += ` AND b.subject_id = $${params.length}`;
+    } else if (subjects.length > 1) {
+      params.push(subjects);
+      query += ` AND b.subject_id = ANY($${params.length}::int[])`;
     }
   }
   if (type) {

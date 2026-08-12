@@ -1,86 +1,156 @@
-// Page-BookGrid
+// Page-BookGrid Logic & UI Interactions
 
 const bookGrid = document.getElementById('bookGrid');
 let currentGrade = 1;
-let currentSubject = '';
+let currentSubjects = [];
+let currentBookType = 'sgk';
 
-async function loadBooks(grade = currentGrade, subject = currentSubject) {
-  try {
-    currentGrade = grade;
-    currentSubject = subject;
-    console.log(currentGrade, currentSubject);
-    let url = `/api/books?grade=${encodeURIComponent(grade)}`;
-    if (subject) {
-      url += `&subject=${encodeURIComponent(subject)}`;
+// Helper function to build image path
+function getCoverImageUrl(book) {
+    if (!book.cover_image_url) {
+        return '/images/SGK-Toan1.1.png';
     }
-
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error(`Server error ${response.status}`);
+    if (book.cover_image_url.startsWith('http')) {
+        return book.cover_image_url;
     }
-
-    const books = await response.json();
-    bookGrid.innerHTML = books.length
-      ? books.map(book => {
-        const src = book.cover_image_url
-          ? (book.cover_image_url.startsWith('http') ? book.cover_image_url : `/images/${book.cover_image_url}`)
-          : '/images/SGK-Toan1.png';
-        return `
-            <a href="#" class="book-item">
-              <img src="${src}" alt="${book.name}">
-              <p class="book-item-title">${book.name}</p>
-            </a>
-          `;
-      }).join('')
-      : '<p class="empty-state">Không có sách cần tìm.</p>';
-  } catch (error) {
-    console.error('Failed to load books:', error);
-    bookGrid.innerHTML = '<p class="empty-state">Lỗi khi tải sách. Vui lòng thử lại sau.</p>';
-  }
+    return `/images/lop${book.grade}/${book.cover_image_url}`;
 }
 
-document.querySelectorAll('.menu-link').forEach(link => {
-  link.addEventListener('click', (e) => {
-    e.preventDefault();
-    document.querySelectorAll('.menu-link').forEach(l => l.classList.remove('active'));
-    link.classList.add('active');
-    loadBooks(link.dataset.grade, currentSubject);
-  });
-});
+// Fetch and render books
+async function loadBooks(grade = currentGrade, subjects = currentSubjects, type = currentBookType) {
+    if (!bookGrid) return;
 
-document.querySelectorAll('.subject-link').forEach(link => {
-  link.addEventListener('click', (e) => {
-    e.preventDefault();
-    const selectedSubject = link.dataset.subject;
-    if (link.classList.contains('active')) {
-      link.classList.remove('active');
-      loadBooks(currentGrade, '');
-    } else {
-      document.querySelectorAll('.subject-link').forEach(l => l.classList.remove('active'));
-      link.classList.add('active');
-      loadBooks(currentGrade, selectedSubject);
+    try {
+        currentGrade = grade;
+        currentSubjects = subjects;
+        currentBookType = type;
+
+        let url = `/api/books?grade=${encodeURIComponent(grade)}`;
+
+        if (Array.isArray(subjects) && subjects.length > 0) {
+            url += `&subject=${encodeURIComponent(subjects.join(','))}`;
+        } else if (typeof subjects === 'string' && subjects.trim()) {
+            url += `&subject=${encodeURIComponent(subjects.trim())}`;
+        }
+
+        if (type) {
+            url += `&type=${encodeURIComponent(type)}`;
+        }
+
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`Server error ${response.status}`);
+        }
+
+        const books = await response.json();
+
+        if (books && books.length > 0) {
+            bookGrid.innerHTML = books.map(book => {
+                const src = getCoverImageUrl(book);
+                return `
+                    <a href="#" class="book-item">
+                        <div class="book-img-wrapper">
+                            <img src="${src}" alt="${book.name}" loading="lazy" onerror="this.onerror=null; this.src='/images/SGK-Toan1.1.png';">
+                        </div>
+                        <div class="book-title-pill">
+                            <p class="book-item-title">${book.name}</p>
+                        </div>
+                    </a>
+                `;
+            }).join('');
+        } else {
+            bookGrid.innerHTML = '<p class="empty-state">Không có sách cần tìm.</p>';
+        }
+    } catch (error) {
+        console.error('Failed to load books:', error);
+        bookGrid.innerHTML = '<p class="empty-state">Lỗi khi tải sách. Vui lòng thử lại sau.</p>';
     }
-  });
+}
+
+// Grade Selection Handler
+document.querySelectorAll('.menu-link').forEach(link => {
+    link.addEventListener('click', (e) => {
+        e.preventDefault();
+
+        // Update active grade styling
+        document.querySelectorAll('.menu-link').forEach(l => l.classList.remove('active'));
+        document.querySelectorAll('.menu-item-wrapper').forEach(w => w.classList.remove('active'));
+
+        link.classList.add('active');
+        if (link.parentElement) {
+            link.parentElement.classList.add('active');
+        }
+
+        const selectedGrade = link.dataset.grade;
+        loadBooks(selectedGrade, currentSubjects, currentBookType);
+    });
 });
 
-loadBooks(1, '');
+// Book Type Selection Handler (Sách giáo khoa / Sách giáo viên)
+document.querySelectorAll('.book-type-link').forEach(link => {
+    link.addEventListener('click', (e) => {
+        e.preventDefault();
+        document.querySelectorAll('.book-type-link').forEach(l => l.classList.remove('active'));
+        link.classList.add('active');
 
-// User-ProfileDropdown
+        const type = link.dataset.type || '';
+        loadBooks(currentGrade, currentSubjects, type);
+    });
+});
+
+// Subject Checkboxes Handler
+const subjectCheckboxes = document.querySelectorAll('.subject-checkbox');
+subjectCheckboxes.forEach(checkbox => {
+    checkbox.addEventListener('change', () => {
+        const checkedValues = Array.from(subjectCheckboxes)
+            .filter(cb => cb.checked)
+            .map(cb => cb.value);
+
+        loadBooks(currentGrade, checkedValues, currentBookType);
+    });
+});
+
+// Initial Load
+if (bookGrid) {
+    loadBooks(1, [], 'sgk');
+}
+
+// User Profile Dropdown Handler
 const userMenu = document.querySelector('.user-menu-wrapper');
 const userDropdown = document.querySelector('.user-dropdown');
 
-let timeoutID;
-userMenu.addEventListener('mouseenter', () => {
-  clearTimeout(timeoutID);
-  userDropdown.style.display = 'block';
-});
-userMenu.addEventListener('mouseleave', () => {
-  timeoutID = setTimeout(() => {
-    userDropdown.style.display = 'none';
-  }, 150);
-});
+if (userMenu && userDropdown) {
+    let timeoutID;
+    userMenu.addEventListener('mouseenter', () => {
+        clearTimeout(timeoutID);
+        userDropdown.style.display = 'block';
+    });
+    userMenu.addEventListener('mouseleave', () => {
+        timeoutID = setTimeout(() => {
+            userDropdown.style.display = 'none';
+        }, 200);
+    });
+
+    // Also support click toggle for touch devices
+    const userAvatarBtn = userMenu.querySelector('.user-avatar-btn');
+    if (userAvatarBtn) {
+        userAvatarBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isVisible = userDropdown.style.display === 'block';
+            userDropdown.style.display = isVisible ? 'none' : 'block';
+        });
+    }
+
+    document.addEventListener('click', (e) => {
+        if (!userMenu.contains(e.target)) {
+            userDropdown.style.display = 'none';
+        }
+    });
+}
+
+// Token Storage from Query Params
 const urlParams = new URLSearchParams(window.location.search);
 const token = urlParams.get('token');
 if (token) {
-  localStorage.setItem('token', token);
+    localStorage.setItem('token', token);
 }

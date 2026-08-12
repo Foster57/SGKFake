@@ -4,45 +4,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SGKFake</title>
+    <title>SGKFake - Bộ Sách Giáo Khoa Điện Tử</title>
     <link rel="stylesheet" href="/asset/asset/style.css">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.9.0/fonts/remixicon.css" rel="stylesheet" />
 </head>
 
 <body>
     <div>
         <header class="header">
             <ul class="header-left">
-                <li><img src="/img/img-home/icon.education.jpeg" width="30px" height="30px" alt="icon"></li>
-                <li><img src="/img/img-home/logo-olm.png" alt="logo"></li>
+                <li><img src="/img/img-home/icon.education.jpeg" class="logo-gd" alt="GD Logo"></li>
+                <li><img src="/img/img-home/logo-olm.png" class="logo-olm" alt="OLM Logo"></li>
             </ul>
 
             <ul class="header-right">
+                <li>
+                    <a href="/pages/user-pages/book-store.html" class="btn-bookstore">
+                        <i class="ri-book-shelf-line"></i>
+                        <span>Tủ sách</span>
+                    </a>
+                </li>
                 <li><a href="/pages/sign-up.html" class="btn btn-outline">Sign up</a></li>
                 <li><a href="/pages/sign-in.html" class="btn btn-solid">Sign in</a></li>
-                <li><a href="" class="btn-link">Sign in by DB of Education</a></li>
             </ul>
         </header>
     </div>
 
     <div class="banner">
-        <img src="/img/img-home/nxbgd-homepage-banner-background.png" alt="banner">
+        <div class="banner-content">
+            <h1 class="banner-title">Bộ sách giáo khoa sử dụng thống nhất từ năm 2026</h1>
+            <div class="banner-subtitle">
+                <span class="highlight">Phiên bản điện tử</span>
+                <span class="status">(Đang phát triển)</span>
+            </div>
+        </div>
     </div>
 
     <div class="menu-section">
+        <span class="menu-label">Lớp</span>
         <ul class="menu-list">
-            <b>Lớp</b>
-            <li><a href="#" class="menu-link active" data-grade="1">1</a></li>
-            <li><a href="#" class="menu-link" data-grade="2">2</a></li>
-            <li><a href="#" class="menu-link" data-grade="3">3</a></li>
-            <li><a href="#" class="menu-link" data-grade="4">4</a></li>
-            <li><a href="#" class="menu-link" data-grade="5">5</a></li>
-            <li><a href="#" class="menu-link" data-grade="6">6</a></li>
-            <li><a href="#" class="menu-link" data-grade="7">7</a></li>
-            <li><a href="#" class="menu-link" data-grade="8">8</a></li>
-            <li><a href="#" class="menu-link" data-grade="9">9</a></li>
-            <li><a href="#" class="menu-link" data-grade="10">10</a></li>
-            <li><a href="#" class="menu-link" data-grade="11">11</a></li>
-            <li><a href="#" class="menu-link" data-grade="12">12</a></li>
+            <li class="menu-item-wrapper active">
+                <a href="#" class="menu-link active" data-grade="1">1</a>
+                <div class="active-bar"></div>
+            </li>
+            <li class="menu-item-wrapper">
+                <a href="#" class="menu-link" data-grade="2">2</a>
+                <div class="active-bar"></div>
+            </li>
+            <li class="menu-item-wrapper">
+                <a href="#" class="menu-link" data-grade="3">3</a>
+                <div class="active-bar"></div>
+            </li>
+            <li class="menu-item-wrapper">
+                <a href="#" class="menu-link" data-grade="4">4</a>
+                <div class="active-bar"></div>
+            </li>
+            <li class="menu-item-wrapper">
+                <a href="#" class="menu-link" data-grade="5">5</a>
+                <div class="active-bar"></div>
+            </li>
+            <li class="menu-item-wrapper">
+                <a href="#" class="menu-link" data-grade="6">6</a>
+                <div class="active-bar"></div>
+            </li>
+            <li class="menu-item-wrapper">
+                <a href="#" class="menu-link" data-grade="7">7</a>
+                <div class="active-bar"></div>
+            </li>
+            <li class="menu-item-wrapper">
+                <a href="#" class="menu-link" data-grade="8">8</a>
+                <div class="active-bar"></div>
+            </li>
+            <li class="menu-item-wrapper">
+                <a href="#" class="menu-link" data-grade="9">9</a>
+                <div class="active-bar"></div>
+            </li>
+            <li class="menu-item-wrapper">
+                <a href="#" class="menu-link" data-grade="10">10</a>
+                <div class="active-bar"></div>
+            </li>
+            <li class="menu-item-wrapper">
+                <a href="#" class="menu-link" data-grade="11">11</a>
+                <div class="active-bar"></div>
+            </li>
+            <li class="menu-item-wrapper">
+                <a href="#" class="menu-link" data-grade="12">12</a>
+                <div class="active-bar"></div>
+            </li>
         </ul>
     </div>
 
@@ -52,14 +100,14 @@
                 <h3 class="sidebar-title">Loại sách</h3>
                 <ul class="sidebar-list">
                     <li>
-                        <a href="" class="sidebar-item">
-                            <img src="/img/img-home/icon-hat.svg" width="20px" height="20px" alt="icon-hat">
+                        <a href="#" class="sidebar-item book-type-link active" data-type="sgk">
+                            <i class="ri-graduation-cap-fill"></i>
                             <span>Sách giáo khoa</span>
                         </a>
                     </li>
                     <li>
-                        <a href="" class="sidebar-item">
-                            <img src="/img/img-home/icon-teacher.svg" width="20px" height="20px" alt="icon-teacher">
+                        <a href="#" class="sidebar-item book-type-link" data-type="sgv">
+                            <i class="ri-user-star-line"></i>
                             <span>Sách giáo viên</span>
                         </a>
                     </li>
@@ -67,19 +115,48 @@
             </div>
             <div class="sidebar-box">
                 <h3 class="sidebar-title">Môn học</h3>
-                <ul class="sidebar-list">
-                    <li><a href="#" class="sidebar-item subject-link" data-subject="2"><span>Tiếng Việt</span></a></li>
-                    <li><a href="#" class="sidebar-item subject-link" data-subject="3"><span>Giáo dục lối
-                                sống</span></a></li>
-                    <li><a href="#" class="sidebar-item subject-link" data-subject="1"><span>Toán</span></a></li>
-                    <li><a href="#" class="sidebar-item subject-link" data-subject="4"><span>Tự nhiên xã hội</span></a>
-                    </li>
-                    <li><a href="#" class="sidebar-item subject-link" data-subject="5"><span>Đạo đức</span></a></li>
-                    <li><a href="#" class="sidebar-item subject-link" data-subject="8"><span>Âm nhạc</span></a></li>
-                    <li><a href="#" class="sidebar-item subject-link" data-subject="7"><span>Mỹ thuật</span></a></li>
-                    <li><a href="#" class="sidebar-item subject-link" data-subject="6"><span>Giáo dục thể
-                                chất</span></a></li>
-                </ul>
+                <div class="sidebar-checkbox-group">
+                    <label class="checkbox-item">
+                        <input type="checkbox" class="subject-checkbox" value="2">
+                        <span>Tiếng Việt</span>
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" class="subject-checkbox" value="3">
+                        <span>Giáo dục lối sống</span>
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" class="subject-checkbox" value="1">
+                        <span>Toán</span>
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" class="subject-checkbox" value="4">
+                        <span>Tự nhiên xã hội</span>
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" class="subject-checkbox" value="5">
+                        <span>Đạo đức</span>
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" class="subject-checkbox" value="8">
+                        <span>Âm nhạc</span>
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" class="subject-checkbox" value="7">
+                        <span>Mỹ thuật</span>
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" class="subject-checkbox" value="6">
+                        <span>Giáo dục thể chất</span>
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" class="subject-checkbox" value="9">
+                        <span>Tiếng Anh</span>
+                    </label>
+                    <label class="checkbox-item">
+                        <input type="checkbox" class="subject-checkbox" value="10">
+                        <span>Hoạt động trải nghiệm</span>
+                    </label>
+                </div>
             </div>
         </aside>
 
