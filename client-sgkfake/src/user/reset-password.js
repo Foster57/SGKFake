@@ -17,25 +17,32 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        const token = localStorage.getItem('token');
+        if (!token) {
+            alert('Vui lòng đăng nhập trước khi đổi mật khẩu.');
+            window.location.href = '/pages/sign-in.html';
+            return;
+        }
+
         try {
-            const response = await fetch('/api/user/reset-password', {
+            const response = await fetch('/api/users/change-password', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify({
                     oldPassword,
-                    newPassword,
-                    confirmPassword
+                    newPassword
                 })
             });
 
             const data = await response.json().catch(() => ({}));
             if (response.ok) {
-                alert(data.message || 'Password changed successfully');
+                alert(data.message || 'Mật khẩu đã đổi thành công!');
                 window.location.href = '/pages/user-pages/user.html';
             } else {
-                alert(data.error || data.message || 'Error resetting password');
+                alert(data.error || data.message || 'Lỗi khi đổi mật khẩu');
             }
         } catch (error) {
             console.error('Reset password error:', error);
