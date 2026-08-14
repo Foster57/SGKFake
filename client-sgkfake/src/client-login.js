@@ -33,9 +33,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // Lưu token và thông tin người dùng vào localStorage
-            if (result.token) {
-                localStorage.setItem('token', result.token);
+            // Lưu access token và thông tin người dùng (refresh token nằm trong httpOnly cookie)
+            if (result.accessToken) {
+                localStorage.setItem('accessToken', result.accessToken);
             }
             if (result.user) {
                 localStorage.setItem('userData', JSON.stringify(result.user));

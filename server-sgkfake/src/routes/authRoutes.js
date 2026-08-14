@@ -11,5 +11,8 @@ router.get('/profile', authenticate, authController.getProfile);
 router.post('/change-password', authenticate, authController.changePassword);
 router.post('/forgot-password', authLimiter, authController.forgotPassword);
 router.post('/verify-otp', authLimiter, authController.verifyOtp);
+router.post('/refresh', authController.refresh);
+router.post('/logout', authController.logout);
+router.post('/exchange', authLimiter, authController.exchange);
 
 module.exports = router;

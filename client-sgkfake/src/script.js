@@ -8,12 +8,12 @@ let currentBookType = 'sgk';
 // Helper function to build image path
 function getCoverImageUrl(book) {
     if (!book.cover_image_url) {
-        return '/images/SGK-Toan1.1.png';
+        return '/images/lop1/SGK-Toan1.1.png';
     }
-    if (book.cover_image_url.startsWith('http')) {
+    if (book.cover_image_url.startsWith('http') || book.cover_image_url.startsWith('/')) {
         return book.cover_image_url;
     }
-    return `/images/lop${book.grade}/${book.cover_image_url}`;
+    return `/images/${book.cover_image_url}`;
 }
 
 // Fetch and render books
@@ -148,9 +148,18 @@ if (userMenu && userDropdown) {
     });
 }
 
-// Token Storage from Query Params
-const urlParams = new URLSearchParams(window.location.search);
-const token = urlParams.get('token');
-if (token) {
-    localStorage.setItem('token', token);
+// Logout
+const logoutBtn = document.getElementById('logout-btn');
+if (logoutBtn) {
+    logoutBtn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        if (window.SGKAuth) {
+            await SGKAuth.logout();
+        } else {
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('userData');
+            sessionStorage.removeItem('resetEmail');
+        }
+        window.location.href = logoutBtn.getAttribute('href') || '/pages/index.html';
+    });
 }

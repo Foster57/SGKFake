@@ -12,10 +12,14 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "cookie-parser": "^1.4.7",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "express-rate-limit": "^8.6.2",
     "jsonwebtoken": "^9.0.3",
+    "kill": "^0.0.2",
+    "multer": "^2.2.0",
     "nodemailer": "^9.0.4",
     "otp-generator": "^4.0.1",
     "pg": "^8.22.0"

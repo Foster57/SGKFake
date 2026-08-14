@@ -9,6 +9,11 @@ function authenticate(req, res, next) {
     try {
         const secretKey = process.env.JWT_SECRET || 'sgkfake_secret_key_2026';
         const decoded = jwt.verify(token, secretKey);
+
+        if (decoded.type !== 'access') {
+            return res.status(403).json({ error: 'Token không hợp lệ' });
+        }
+
         req.userID = decoded.id;
         req.userAccount = decoded.account;
         req.userEmail = decoded.email;
@@ -20,4 +25,11 @@ function authenticate(req, res, next) {
     }
 }
 
-module.exports = { authenticate };
+function requireAdmin(req, res, next) {
+    if (req.userRole !== 'admin') {
+        return res.status(403).json({ error: 'Bạn không có quyền truy cập' });
+    }
+    next();
+}
+
+module.exports = { authenticate, requireAdmin };

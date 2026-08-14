@@ -1,8 +1,110 @@
+const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const otpGenerator = require('otp-generator');
 const pool = require('../config/db');
 const transporter = require('../config/mailer');
-const { hashPassword, comparePassword } = require('../utils/hash');
+const { hashPassword, comparePassword, needsRehash } = require('../utils/hash');
+
+const ACCESS_SECRET = process.env.JWT_SECRET || 'sgkfake_secret_key_2026';
+const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'sgkfake_refresh_secret_2026';
+const ACCESS_EXPIRES = process.env.JWT_ACCESS_EXPIRES || '30m';
+const REFRESH_EXPIRES = process.env.JWT_REFRESH_EXPIRES || '7d';
+const REFRESH_COOKIE_NAME = 'refreshToken';
+const REFRESH_COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: 'strict',
+  path: '/api/users',
+  maxAge: 7 * 24 * 60 * 60 * 1000
+};
+
+// Lưu trữ one-time code cho OAuth callback (B) — dùng 1 lần, sống 60s
+const oauthCodes = new Map();
+
+function hashToken(token) {
+  return crypto.createHash('sha256').update(token).digest('hex');
+}
+
+function signTokens(user) {
+  const accessToken = jwt.sign(
+    { id: user.user_id, account: user.user_account, email: user.email, role: user.role || 'user', type: 'access' },
+    ACCESS_SECRET,
+    { expiresIn: ACCESS_EXPIRES }
+  );
+  const refreshToken = jwt.sign(
+    { id: user.user_id, type: 'refresh' },
+    REFRESH_SECRET,
+    { expiresIn: REFRESH_EXPIRES, jwtid: crypto.randomUUID() }
+  );
+  return { accessToken, refreshToken };
+}
+
+async function storeRefreshToken(userId, refreshToken) {
+  await pool.query(
+    `INSERT INTO refresh_tokens (user_id, token_hash, expires_at) VALUES ($1, $2, NOW() + ($3)::interval)`,
+    [userId, hashToken(refreshToken), REFRESH_EXPIRES]
+  );
+}
+
+// Rotation trong transaction (C): atomic UPDATE ... RETURNING.
+// Token hợp lệ -> revoke cũ + cấp cặp token mới.
+// Token đã bị thu hồi trước đó (reuse detected) -> thu hồi toàn bộ phiên của user.
+async function rotateRefreshToken(oldTokenHash, userId) {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+
+    const { rows } = await client.query(
+      `UPDATE refresh_tokens SET revoked_at = NOW()
+       WHERE token_hash = $1 AND user_id = $2 AND revoked_at IS NULL AND expires_at > NOW()
+       RETURNING id`,
+      [oldTokenHash, userId]
+    );
+
+    if (rows.length === 0) {
+      const check = await client.query(
+        `SELECT revoked_at FROM refresh_tokens WHERE token_hash = $1 AND user_id = $2`,
+        [oldTokenHash, userId]
+      );
+      if (check.rows.length > 0 && check.rows[0].revoked_at) {
+        await client.query(
+          `UPDATE refresh_tokens SET revoked_at = NOW() WHERE user_id = $1 AND revoked_at IS NULL`,
+          [userId]
+        );
+      }
+      await client.query('COMMIT');
+      return { reuse: true };
+    }
+
+    const userResult = await client.query(
+      `SELECT user_id, user_account, email, role FROM users WHERE user_id = $1`,
+      [userId]
+    );
+    const user = userResult.rows[0];
+    const tokens = signTokens(user);
+
+    await client.query(
+      `INSERT INTO refresh_tokens (user_id, token_hash, expires_at) VALUES ($1, $2, NOW() + ($3)::interval)`,
+      [userId, hashToken(tokens.refreshToken), REFRESH_EXPIRES]
+    );
+
+    await client.query('COMMIT');
+    return { reuse: false, user, tokens };
+  } catch (err) {
+    await client.query('ROLLBACK');
+    throw err;
+  } finally {
+    client.release();
+  }
+}
+
+function setRefreshCookie(res, refreshToken) {
+  res.cookie(REFRESH_COOKIE_NAME, refreshToken, REFRESH_COOKIE_OPTIONS);
+}
+
+function clearRefreshCookie(res) {
+  res.clearCookie(REFRESH_COOKIE_NAME, { path: '/api/users' });
+}
 
 // POST /api/users/login
 async function login(req, res) {
@@ -15,7 +117,7 @@ async function login(req, res) {
 
   try {
     const result = await pool.query(
-      `SELECT user_id, user_account, hashpasword, email FROM users WHERE LOWER(user_account) = LOWER($1) OR LOWER(email) = LOWER($1)`,
+      `SELECT user_id, user_account, hashpasword, email, role FROM users WHERE LOWER(user_account) = LOWER($1) OR LOWER(email) = LOWER($1)`,
       [account]
     );
 
@@ -30,18 +132,24 @@ async function login(req, res) {
       return res.status(401).json({ error: 'Tài khoản hoặc mật khẩu không chính xác!' });
     }
 
-    const secretKey = process.env.JWT_SECRET || 'sgkfake_secret_key_2026';
-    const token = jwt.sign(
-      { id: user.user_id, account: user.user_account, email: user.email },
-      secretKey,
-      { expiresIn: '24h' }
-    );
+    if (needsRehash(user.hashpasword)) {
+      const upgraded = await hashPassword(password);
+      await pool.query(
+        'UPDATE users SET hashpasword = $1 WHERE user_id = $2',
+        [upgraded, user.user_id]
+      );
+      user.hashpasword = upgraded;
+    }
 
-    const { user_id, user_account, email } = user;
+    const { user_id, user_account, email, role } = user;
+    const { accessToken, refreshToken } = signTokens(user);
+    await storeRefreshToken(user_id, refreshToken);
+    setRefreshCookie(res, refreshToken);
+
     res.json({
       message: 'Đăng nhập thành công',
-      token,
-      user: { user_id, user_account, email }
+      accessToken,
+      user: { user_id, user_account, email, role }
     });
   } catch (err) {
     console.error('Login error:', err);
@@ -59,10 +167,27 @@ async function register(req, res) {
     return res.status(400).json({ error: 'Thiếu tài khoản hoặc mật khẩu' });
   }
 
+  if (!email) {
+    return res.status(400).json({ error: 'Email là bắt buộc' });
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    return res.status(400).json({ error: 'Email không hợp lệ' });
+  }
+
   try {
+    const emailCheck = await pool.query(
+      'SELECT user_id FROM users WHERE LOWER(email) = LOWER($1)',
+      [email]
+    );
+    if (emailCheck.rows.length > 0) {
+      return res.status(409).json({ error: 'Email này đã được sử dụng!' });
+    }
+
     const hashedPassword = await hashPassword(password);
     const result = await pool.query(
-      `INSERT INTO users (user_account, hashpasword, email) VALUES ($1, $2, $3) RETURNING user_id, user_account, email`,
+      `INSERT INTO users (user_account, hashpasword, email) VALUES ($1, $2, $3) RETURNING user_id, user_account, email, role`,
       [account, hashedPassword, email]
     );
     res.status(201).json(result.rows[0]);
@@ -79,7 +204,7 @@ async function register(req, res) {
 async function getProfile(req, res) {
   try {
     const result = await pool.query(
-      `SELECT user_id, user_account, email FROM users WHERE user_id = $1`,
+      `SELECT user_id, user_account, email, role FROM users WHERE user_id = $1`,
       [req.userID]
     );
 
@@ -275,7 +400,7 @@ async function googleAuthCallback(req, res) {
     const account = `${email}`;
 
     let userResult = await pool.query(
-      `SELECT user_id, user_account, email FROM users WHERE email = $1 OR user_account = $2`,
+      `SELECT user_id, user_account, email, role FROM users WHERE email = $1 OR user_account = $2`,
       [email, account]
     );
 
@@ -283,24 +408,109 @@ async function googleAuthCallback(req, res) {
     if (userResult.rows.length === 0) {
       const dummyPassword = await hashPassword(`google_${googleUser.id}_${Date.now()}`);
       const insertResult = await pool.query(
-        `INSERT INTO users (user_account, hashpasword, email) VALUES ($1, $2, $3) RETURNING user_id, user_account, email`,
+        `INSERT INTO users (user_account, hashpasword, email) VALUES ($1, $2, $3) RETURNING user_id, user_account, email, role`,
         [account, dummyPassword, email]
       );
       user = insertResult.rows[0];
     } else {
       user = userResult.rows[0];
     }
-    const secretKey = process.env.JWT_SECRET || 'sgkfake_secret_key_2026';
-    const token = jwt.sign(
-      { id: user.user_id, account: user.user_account, email: user.email },
-      secretKey,
-      { expiresIn: '24h' }
-    );
-    res.redirect(`/pages/user-pages/user.html?token=${token}&user=${encodeURIComponent(user.user_account)}`);
+    const oneTimeCode = crypto.randomBytes(32).toString('hex');
+    oauthCodes.set(oneTimeCode, { userId: user.user_id, expiresAt: Date.now() + 60 * 1000 });
+
+    const clientUrl = process.env.CLIENT_URL || '';
+    res.redirect(`${clientUrl}/pages/auth/callback.html?code=${oneTimeCode}`);
   } catch (err) {
     console.error('Google Auth Error:', err);
     res.status(500).send('Lỗi máy chủ khi đăng nhập bằng Google');
   }
+}
+
+// POST /api/users/exchange — đổi one-time code (B) lấy token thật
+async function exchange(req, res) {
+  const { code } = req.body;
+  if (!code) {
+    return res.status(400).json({ error: 'Thiếu mã xác thực' });
+  }
+
+  const record = oauthCodes.get(code);
+  if (!record) {
+    return res.status(400).json({ error: 'Mã xác thực không hợp lệ hoặc đã hết hạn' });
+  }
+  oauthCodes.delete(code);
+
+  if (Date.now() > record.expiresAt) {
+    return res.status(400).json({ error: 'Mã xác thực đã hết hạn' });
+  }
+
+  try {
+    const user = await pool.query(
+      `SELECT user_id, user_account, email, role FROM users WHERE user_id = $1`,
+      [record.userId]
+    );
+    if (user.rows.length === 0) {
+      return res.status(404).json({ error: 'Không tìm thấy người dùng' });
+    }
+
+    const foundUser = user.rows[0];
+    const { accessToken, refreshToken } = signTokens(foundUser);
+    await storeRefreshToken(foundUser.user_id, refreshToken);
+    setRefreshCookie(res, refreshToken);
+
+    res.json({
+      message: 'Đăng nhập thành công',
+      accessToken,
+      user: { user_id: foundUser.user_id, user_account: foundUser.user_account, email: foundUser.email, role: foundUser.role }
+    });
+  } catch (err) {
+    console.error('Exchange error:', err);
+    res.status(500).json({ error: 'Lỗi máy chủ khi xác thực' });
+  }
+}
+
+// POST /api/users/refresh
+async function refresh(req, res) {
+  const refreshToken = req.cookies?.[REFRESH_COOKIE_NAME];
+  if (!refreshToken) {
+    return res.status(401).json({ error: 'Thiếu refresh token' });
+  }
+
+  try {
+    const payload = jwt.verify(refreshToken, REFRESH_SECRET);
+    if (payload.type !== 'refresh') {
+      return res.status(403).json({ error: 'Token không hợp lệ' });
+    }
+
+    const result = await rotateRefreshToken(hashToken(refreshToken), payload.id);
+
+    if (result.reuse) {
+      clearRefreshCookie(res);
+      return res.status(403).json({ error: 'Phiên đã hết hạn, vui lòng đăng nhập lại' });
+    }
+
+    setRefreshCookie(res, result.tokens.refreshToken);
+    res.json({
+      accessToken: result.tokens.accessToken,
+      user: { user_id: result.user.user_id, user_account: result.user.user_account, email: result.user.email, role: result.user.role }
+    });
+  } catch (err) {
+    clearRefreshCookie(res);
+    console.error('Refresh error:', err);
+    return res.status(403).json({ error: 'Refresh token không hợp lệ hoặc đã hết hạn' });
+  }
+}
+
+// POST /api/users/logout
+async function logout(req, res) {
+  const refreshToken = req.cookies?.[REFRESH_COOKIE_NAME];
+  if (refreshToken) {
+    await pool.query(
+      `UPDATE refresh_tokens SET revoked_at = NOW() WHERE token_hash = $1 AND revoked_at IS NULL`,
+      [hashToken(refreshToken)]
+    );
+  }
+  clearRefreshCookie(res);
+  res.json({ message: 'Đăng xuất thành công' });
 }
 
 module.exports = {
@@ -311,5 +521,8 @@ module.exports = {
   forgotPassword,
   verifyOtp,
   googleAuth,
-  googleAuthCallback
+  googleAuthCallback,
+  exchange,
+  refresh,
+  logout
 };
