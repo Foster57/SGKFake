@@ -17,6 +17,14 @@ const REFRESH_COOKIE_OPTIONS = {
   path: '/api/users',
   maxAge: 7 * 24 * 60 * 60 * 1000
 };
+const ACCESS_COOKIE_NAME = 'accessToken';
+const ACCESS_COOKIE_OPTIONS = {
+  httpOnly: false, // Client JS cần đọc cho Authorization header
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: 'strict',
+  path: '/',
+  maxAge: 30 * 60 * 1000 // 30 phút (match ACCESS_EXPIRES)
+};
 
 // Lưu trữ one-time code cho OAuth callback (B) — dùng 1 lần, sống 60s
 const oauthCodes = new Map();
@@ -102,8 +110,16 @@ function setRefreshCookie(res, refreshToken) {
   res.cookie(REFRESH_COOKIE_NAME, refreshToken, REFRESH_COOKIE_OPTIONS);
 }
 
+function setAccessCookie(res, accessToken) {
+  res.cookie(ACCESS_COOKIE_NAME, accessToken, ACCESS_COOKIE_OPTIONS);
+}
+
 function clearRefreshCookie(res) {
   res.clearCookie(REFRESH_COOKIE_NAME, { path: '/api/users' });
+}
+
+function clearAccessCookie(res) {
+  res.clearCookie(ACCESS_COOKIE_NAME, { path: '/' });
 }
 
 // POST /api/users/login
@@ -145,6 +161,7 @@ async function login(req, res) {
     const { accessToken, refreshToken } = signTokens(user);
     await storeRefreshToken(user_id, refreshToken);
     setRefreshCookie(res, refreshToken);
+    setAccessCookie(res, accessToken);
 
     res.json({
       message: 'Đăng nhập thành công',
@@ -420,7 +437,7 @@ async function googleAuthCallback(req, res) {
     oauthCodes.set(oneTimeCode, { userId: user.user_id, expiresAt: Date.now() + 60 * 1000 });
 
     const clientUrl = process.env.CLIENT_URL || '';
-    res.redirect(`${clientUrl}/pages/auth/callback.html?code=${oneTimeCode}`);
+    res.redirect(`${clientUrl}/auth/callback?code=${oneTimeCode}`);
   } catch (err) {
     console.error('Google Auth Error:', err);
     res.status(500).send('Lỗi máy chủ khi đăng nhập bằng Google');
@@ -457,6 +474,7 @@ async function exchange(req, res) {
     const { accessToken, refreshToken } = signTokens(foundUser);
     await storeRefreshToken(foundUser.user_id, refreshToken);
     setRefreshCookie(res, refreshToken);
+    setAccessCookie(res, accessToken);
 
     res.json({
       message: 'Đăng nhập thành công',
@@ -490,6 +508,7 @@ async function refresh(req, res) {
     }
 
     setRefreshCookie(res, result.tokens.refreshToken);
+    setAccessCookie(res, result.tokens.accessToken);
     res.json({
       accessToken: result.tokens.accessToken,
       user: { user_id: result.user.user_id, user_account: result.user.user_account, email: result.user.email, role: result.user.role }
@@ -511,7 +530,18 @@ async function logout(req, res) {
     );
   }
   clearRefreshCookie(res);
+  clearAccessCookie(res);
   res.json({ message: 'Đăng xuất thành công' });
+}
+
+// GET /api/users/me — quick auth check (trả thông tin từ JWT, không query DB)
+function me(req, res) {
+  res.json({
+    user_id: req.userID,
+    user_account: req.userAccount,
+    email: req.userEmail,
+    role: req.userRole
+  });
 }
 
 module.exports = {
@@ -525,5 +555,6 @@ module.exports = {
   googleAuthCallback,
   exchange,
   refresh,
-  logout
+  logout,
+  me
 };

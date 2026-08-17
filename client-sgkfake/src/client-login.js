@@ -41,8 +41,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 localStorage.setItem('userData', JSON.stringify(result.user));
             }
 
-            // Đăng nhập thành công -> về trang chủ
-            window.location.href = '/pages/user-pages/user.html';
+            // Đăng nhập thành công -> điều hướng theo role
+            const targetURL = result.user.role === 'admin' ?
+                '/admin' 
+                : '/user';
+            window.location.href = targetURL;
         } catch (error) {
             console.error('Failed to login:', error);
             alert('Đã xảy ra lỗi khi kết nối máy chủ. Vui lòng thử lại sau.');

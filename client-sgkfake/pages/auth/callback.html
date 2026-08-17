@@ -56,7 +56,7 @@
 
             if (!code) {
                 alert('Không nhận được mã xác thực.');
-                window.location.href = '/pages/sign-in.html';
+                window.location.href = '/login';
                 return;
             }
 
@@ -80,11 +80,14 @@
                     localStorage.setItem('userData', JSON.stringify(data.user));
                 }
 
-                window.location.href = '/pages/user-pages/user.html';
+                const targetURL = data.user.role === 'admin' ?
+                    '/admin' 
+                    : '/user';
+                window.location.href = targetURL;
             } catch (err) {
                 console.error('Exchange error:', err);
                 alert(err.message || 'Đăng nhập thất bại, vui lòng thử lại.');
-                window.location.href = '/pages/sign-in.html';
+                window.location.href = '/login';
             }
         })();
     </script>

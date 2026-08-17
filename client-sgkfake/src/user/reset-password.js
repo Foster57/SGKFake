@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const token = localStorage.getItem('accessToken');
         if (!token) {
             alert('Vui lòng đăng nhập trước khi đổi mật khẩu.');
-            window.location.href = '/pages/sign-in.html';
+            window.location.href = '/login';
             return;
         }
 
@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json().catch(() => ({}));
             if (response.ok) {
                 alert(data.message || 'Mật khẩu đã đổi thành công!');
-                window.location.href = '/pages/user-pages/user.html';
+                window.location.href = '/user';
             } else {
                 alert(data.error || data.message || 'Lỗi khi đổi mật khẩu');
             }

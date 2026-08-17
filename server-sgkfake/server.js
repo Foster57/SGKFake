@@ -6,6 +6,7 @@ const pool = require('./src/config/db');
 const authRoutes = require('./src/routes/authRoutes');
 const bookRoutes = require('./src/routes/bookRoutes');
 const adminRoutes = require('./src/routes/adminRoutes');
+const pageRoutes = require('./src/routes/pageRoutes');
 const authController = require('./src/controllers/authController');
 
 const app = express();
@@ -15,15 +16,12 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// Static files
-app.use(express.static(path.join(__dirname, '..', 'client-sgkfake')));
+// Static files (assets, images, CSS, JS — nhưng KHÔNG cho truy cập trực tiếp HTML protected)
+app.use('/asset', express.static(path.join(__dirname, '..', 'client-sgkfake', 'asset')));
+app.use('/src', express.static(path.join(__dirname, '..', 'client-sgkfake', 'src')));
+app.use('/img', express.static(path.join(__dirname, '..', 'client-sgkfake', 'img')));
 app.use('/images', express.static(path.join(__dirname, '..', 'client-sgkfake', 'img', 'img-subject')));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
-// Root route
-app.get('/', (req, res) => {
-  res.redirect('/pages/index.html');
-});
 
 // API Routes
 app.use('/api/users', authRoutes);
@@ -33,6 +31,9 @@ app.use('/api/admin', adminRoutes);
 // Google OAuth Routes
 app.get('/auth/google', authController.googleAuth);
 app.get('/auth/google/callback', authController.googleAuthCallback);
+
+// Page Routes (clean URLs với server-side auth guard)
+app.use('/', pageRoutes);
 
 // Cronjob: Tự động dọn dẹp các OTP hết hạn trong DB sau mỗi 1 phút
 setInterval(async () => {

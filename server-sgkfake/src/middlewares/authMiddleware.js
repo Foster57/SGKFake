@@ -32,4 +32,11 @@ function requireAdmin(req, res, next) {
     next();
 }
 
-module.exports = { authenticate, requireAdmin };
+function requireUser(req, res, next) {
+    if (!req.userRole || !['user', 'admin'].includes(req.userRole)) {
+        return res.status(403).json({ error: 'Bạn không có quyền truy cập' });
+    }
+    next();
+}
+
+module.exports = { authenticate, requireUser, requireAdmin };

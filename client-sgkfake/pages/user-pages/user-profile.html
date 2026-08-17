@@ -4,6 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
     <title>Thông tin cá nhân</title>
     <link rel="stylesheet" href="/asset/asset/user-profile.css">
 </head>
@@ -34,11 +36,12 @@
         </div>
 
         <div class="profile-footer">
-            <a href="/pages/user-pages/user.html" class="btn-back">Quay lại trang chủ</a>
+            <a href="/user" class="btn-back">Quay lại trang chủ</a>
         </div>
     </div>
 
     <script src="/src/auth.js"></script>
+    <script src="/src/route-guard.js" data-require-auth="true"></script>
     <script>
         async function loadProfile() {
             const accountEl = document.getElementById('display-account');

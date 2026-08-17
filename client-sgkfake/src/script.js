@@ -148,6 +148,7 @@ if (userMenu && userDropdown) {
     });
 }
 
+
 // Logout
 const logoutBtn = document.getElementById('logout-btn');
 if (logoutBtn) {
@@ -160,6 +161,6 @@ if (logoutBtn) {
             localStorage.removeItem('userData');
             sessionStorage.removeItem('resetEmail');
         }
-        window.location.href = logoutBtn.getAttribute('href') || '/pages/index.html';
+        window.location.href = '/login';
     });
 }

@@ -4,6 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
     <title>SGKFake - Tủ Sách</title>
     <link rel="stylesheet" href="/asset/asset/style.css">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.9.0/fonts/remixicon.css" rel="stylesheet" />
@@ -19,7 +21,7 @@
 
             <ul class="header-right">
                 <li>
-                    <a href="/pages/user-pages/user.html" class="btn-bookstore">
+                    <a href="/user" class="btn-bookstore">
                         <i class="ri-home-4-line"></i>
                         <span>Trang chủ</span>
                     </a>
@@ -36,6 +38,9 @@
             </div>
         </div>
     </div>
+
+    <script src="/src/auth.js"></script>
+    <script src="/src/route-guard.js" data-require-auth="true"></script>
 </body>
 
 </html>

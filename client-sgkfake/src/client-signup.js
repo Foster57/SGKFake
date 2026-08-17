@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const newUser = await response.json();
             alert('Đăng ký tài khoản thành công!');
-            window.location.href = '/pages/sign-in.html';
+            window.location.href = '/login';
         } catch (error) {
             console.error('Failed to sign up:', error);
             alert(error.message || 'Đã xảy ra lỗi khi đăng ký. Vui lòng thử lại sau.');

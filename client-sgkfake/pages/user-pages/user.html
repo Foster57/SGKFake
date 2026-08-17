@@ -4,6 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
     <title>SGKFake - Trống Trường</title>
     <link rel="stylesheet" href="/asset/asset/style.css">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.9.0/fonts/remixicon.css" rel="stylesheet" />
@@ -19,7 +21,7 @@
 
             <ul class="header-right">
                 <li>
-                    <a href="/pages/user-pages/book-store.html" class="btn-bookstore">
+                    <a href="/user/books" class="btn-bookstore">
                         <i class="ri-book-shelf-line"></i>
                         <span>Tủ sách</span>
                     </a>
@@ -36,9 +38,9 @@
                         </div>
                         <div class="user-dropdown">
                             <ul>
-                                <li><a href="/pages/user-pages/user-profile.html"><i class="ri-user-line"></i> Thông tin cá nhân</a></li>
-                                <li><a href="/pages/user-pages/user-resetpassword.html"><i class="ri-lock-password-line"></i> Đổi mật khẩu</a></li>
-                                <li><a href="/pages/index.html" id="logout-btn"><i class="ri-logout-box-r-line"></i> Đăng xuất</a></li>
+                                <li><a href="/user/profile"><i class="ri-user-line"></i> Thông tin cá nhân</a></li>
+                                <li><a href="/user/reset-password"><i class="ri-lock-password-line"></i> Đổi mật khẩu</a></li>
+                                <li><a href="/login" id="logout-btn"><i class="ri-logout-box-r-line"></i> Đăng xuất</a></li>
                             </ul>
                         </div>
                     </div>
@@ -175,6 +177,7 @@
     </div>
 
     <script src="/src/auth.js"></script>
+    <script src="/src/route-guard.js" data-require-auth="true"></script>
     <script src="/src/script.js"></script>
 </body>
 

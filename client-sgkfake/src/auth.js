@@ -70,6 +70,32 @@ async function logout() {
     setAccessToken(null);
     localStorage.removeItem('userData');
     sessionStorage.removeItem('resetEmail');
+    // Cookie accessToken đã được server clear qua Set-Cookie
+}
+
+/**
+ * Kiểm tra trạng thái auth hiện tại.
+ * Trả về { authenticated, user } hoặc { authenticated: false }.
+ */
+async function checkAuth() {
+    const token = getAccessToken();
+    if (!token) return { authenticated: false };
+
+    try {
+        const res = await authFetch('/api/users/me');
+        if (!res.ok) {
+            setAccessToken(null);
+            localStorage.removeItem('userData');
+            return { authenticated: false };
+        }
+        const user = await res.json();
+        localStorage.setItem('userData', JSON.stringify(user));
+        return { authenticated: true, user };
+    } catch {
+        setAccessToken(null);
+        localStorage.removeItem('userData');
+        return { authenticated: false };
+    }
 }
 
 window.SGKAuth = {
@@ -77,5 +103,6 @@ window.SGKAuth = {
     setAccessToken,
     refreshAccessToken,
     authFetch,
-    logout
+    logout,
+    checkAuth
 };
