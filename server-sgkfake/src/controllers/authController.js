@@ -323,8 +323,9 @@ async function verifyOtp(req, res) {
     }
 
     const user = verifyOTPResult.rows[0];
-
-    if (!user.otp || user.otp !== otp) {
+    const otpBuf = Buffer.from(user.otp || '', 'utf-8');
+    const inputBuf = Buffer.from(otp);
+    if(!user.otp || otpBuf.length !== inputBuf.length || !crypto.timingSafeEqual(otpBuf, inputBuf)) {
       return res.status(400).json({ error: 'Mã OTP không chính xác' });
     }
 

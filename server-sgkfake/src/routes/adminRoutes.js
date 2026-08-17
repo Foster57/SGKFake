@@ -31,5 +31,9 @@ router.get('/subjects', adminController.getSubjects);
 router.post('/subjects', adminController.createSubject);
 router.put('/subjects/:id', adminController.updateSubject);
 router.delete('/subjects/:id', adminController.deleteSubject);
+// Người dùng
+router.get('/users', adminController.listUsers);
+router.put('/users/:id/role', adminController.updateUserRole  );
+router.delete('/users/:id', adminController.deleteUser);
 
 module.exports = router;

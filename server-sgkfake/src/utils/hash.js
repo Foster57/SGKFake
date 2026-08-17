@@ -35,7 +35,7 @@ async function comparePassword(password, storedHash) {
     return false;
   }
   const hashed = hashPasswordSHA256(password);
-  return (storedHash === hashed || storedHash === password);
+  return storedHash === hashed;
 }
 
 async function needsRehash(storedHash) {
