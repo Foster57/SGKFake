@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            const response = await fetch('/api/users/change-password', {
+            const response = await SGKAuth.authFetch('/api/users/change-password', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

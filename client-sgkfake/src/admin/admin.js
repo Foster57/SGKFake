@@ -292,7 +292,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('bookType').value = book.book_type || 'sgk';
 
         if (book.cover_image_url) {
-            const src = book.cover_image_url.startsWith('/') ? book.cover_image_url : `/uploads/${book.cover_image_url}`;
+            const src = book.cover_image_url.startsWith('/') ? book.cover_image_url : `/images/${book.cover_image_url}`;
             bookCoverPreview.src = src;
             bookCoverPreview.style.display = 'block';
             bookCoverUpload.classList.add('has-file');
@@ -324,18 +324,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             if (editingBookId) {
-                await fetch(`/api/admin/books/${editingBookId}`, {
+                const response = await fetch(`/api/admin/books/${editingBookId}`, {
                     method: 'PUT',
-                    headers: { 'Authorization': `Bearer ${SGKAuth.getAccessToken()}` },
+                    headers: { 'Authorization': `Bearer ${SGKAuth.authFetch()}` },
                     body: formData
                 });
+                if (!response.ok) {
+                    throw new Error(`Lỗi server ${response.status}`);
+                }
                 showToast('Cập nhật sách thành công');
             } else {
-                await fetch('/api/admin/books', {
+                const response =  await fetch('/api/admin/books', {
                     method: 'POST',
-                    headers: { 'Authorization': `Bearer ${SGKAuth.getAccessToken()}` },
+                    headers: { 'Authorization': `Bearer ${SGKAuth.authFetch()}` },
                     body: formData
                 });
+                if (!response.ok) {
+                    throw new Error(`Lỗi server ${response.status}`);
+                }
                 showToast('Thêm sách thành công');
             }
             closeBookModalFn();
@@ -353,7 +359,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function deleteBook(id) {
         try {
-            await apiFetch(`/api/admin/books/${id}`, { method: 'DELETE' });
+            const response = await apiFetch(`/api/admin/books/${id}`, { method: 'DELETE' });
+            if (!response.ok) {
+                throw new Error(`Lỗi server ${response.status}`);
+            }
             showToast('Xóa sách thành công');
             loadBooks();
         } catch (err) {

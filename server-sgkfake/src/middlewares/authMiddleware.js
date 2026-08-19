@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const pool = require('../config/db');
 
 function authenticate(req, res, next) {
     const authHeader = req.headers.authorization;
@@ -14,12 +15,18 @@ function authenticate(req, res, next) {
             return res.status(403).json({ error: 'Token không hợp lệ' });
         }
 
-        req.userID = decoded.id;
-        req.userAccount = decoded.account;
-        req.userEmail = decoded.email;
-        req.userRole = decoded.role || 'user';
-
-        next();
+        pool.query('SELECT is_active FROM users WHERE user_id = $1', [decoded.id])
+            .then(result => {
+                if (result.rows.length === 0 || result.rows[0].is_active === false) {
+                    return res.status(403).json({ error: 'Tài khoản đã bị khóa' });
+                }
+                req.userID = decoded.id;
+                req.userAccount = decoded.account;
+                req.userEmail = decoded.email;
+                req.userRole = decoded.role || 'user';
+                next();
+            })
+            .catch(() => res.status(500).json({ error: 'Lỗi máy chủ' }));
     } catch (err) {
         return res.status(403).json({ error: 'Token không hợp lệ hoặc đã hết hạn' });
     }

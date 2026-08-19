@@ -155,7 +155,7 @@ async function deleteSubject(req, res) {
 async function listUsers(req, res) {
   try {
     const result = await pool.query(
-      'SELECT user_id, user_account, email, role FROM users ORDER BY user_id'
+      'SELECT user_id, user_account, email, role, is_active FROM users ORDER BY user_id'
     );
     res.json(result.rows);
   } catch (err) {
@@ -189,10 +189,17 @@ async function updateUserRole(req, res) {
 async function deleteUser(req, res) {
   const userId = req.params.id;
   try {
-    const result = await pool.query('DELETE FROM users WHERE user_id = $1 RETURNING user_id', [userId]);
+    const result = await pool.query(
+      'UPDATE users SET is_active = false WHERE user_id = $1 AND is_active = true RETURNING user_id',
+      [userId]
+    );
     if (result.rowCount === 0) {
       return res.status(404).json({ error: 'Không tìm thấy người dùng' });
     }
+    await pool.query(
+      'UPDATE refresh_tokens SET revoked_at = NOW() WHERE user_id = $1 AND revoked_at IS NULL',
+      [userId]
+    );
     res.json({ message: 'Xóa người dùng thành công' });
   } catch (err) {
     console.error('DB query error:', err);

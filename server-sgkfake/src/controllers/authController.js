@@ -133,7 +133,7 @@ async function login(req, res) {
 
   try {
     const result = await pool.query(
-      `SELECT user_id, user_account, hashpasword, email, role FROM users WHERE LOWER(user_account) = LOWER($1) OR LOWER(email) = LOWER($1)`,
+      `SELECT user_id, user_account, hashpasword, email, role, is_active FROM users WHERE LOWER(user_account) = LOWER($1) OR LOWER(email) = LOWER($1)`,
       [account]
     );
 
@@ -142,6 +142,11 @@ async function login(req, res) {
     }
 
     const user = result.rows[0];
+
+    if (user.is_active === false) {
+      return res.status(403).json({ error: 'Tài khoản đã bị khóa. Vui lòng liên hệ quản trị viên.' });
+    }
+
     const isMatch = await comparePassword(password, user.hashpasword);
 
     if (!isMatch) {
@@ -195,10 +200,13 @@ async function register(req, res) {
 
   try {
     const emailCheck = await pool.query(
-      'SELECT user_id FROM users WHERE LOWER(email) = LOWER($1)',
+      'SELECT user_id, is_active FROM users WHERE LOWER(email) = LOWER($1)',
       [email]
     );
     if (emailCheck.rows.length > 0) {
+      if (emailCheck.rows[0].is_active === false) {
+        return res.status(403).json({ error: 'Email này đã bị khóa. Vui lòng liên hệ quản trị viên.' });
+      }
       return res.status(409).json({ error: 'Email này đã được sử dụng!' });
     }
 
@@ -418,7 +426,7 @@ async function googleAuthCallback(req, res) {
     const account = `${email}`;
 
     let userResult = await pool.query(
-      `SELECT user_id, user_account, email, role FROM users WHERE email = $1 OR user_account = $2`,
+      `SELECT user_id, user_account, email, role, is_active FROM users WHERE email = $1 OR user_account = $2`,
       [email, account]
     );
 
@@ -432,6 +440,10 @@ async function googleAuthCallback(req, res) {
       user = insertResult.rows[0];
     } else {
       user = userResult.rows[0];
+      if (user.is_active === false) {
+        const clientUrl = process.env.CLIENT_URL || '';
+        return res.redirect(`${clientUrl}/login?error=account_disabled`);
+      }
     }
     const oneTimeCode = crypto.randomBytes(32).toString('hex');
     oauthCodes.set(oneTimeCode, { userId: user.user_id, expiresAt: Date.now() + 60 * 1000 });
@@ -463,7 +475,7 @@ async function exchange(req, res) {
 
   try {
     const user = await pool.query(
-      `SELECT user_id, user_account, email, role FROM users WHERE user_id = $1`,
+      `SELECT user_id, user_account, email, role, is_active FROM users WHERE user_id = $1`,
       [record.userId]
     );
     if (user.rows.length === 0) {
@@ -471,6 +483,9 @@ async function exchange(req, res) {
     }
 
     const foundUser = user.rows[0];
+    if (foundUser.is_active === false) {
+      return res.status(403).json({ error: 'Tài khoản đã bị khóa. Vui lòng liên hệ quản trị viên.' });
+    }
     const { accessToken, refreshToken } = signTokens(foundUser);
     await storeRefreshToken(foundUser.user_id, refreshToken);
     setRefreshCookie(res, refreshToken);

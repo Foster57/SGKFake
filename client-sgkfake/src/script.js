@@ -45,15 +45,20 @@ async function loadBooks(grade = currentGrade, subjects = currentSubjects, type 
         const books = await response.json();
 
         if (books && books.length > 0) {
+            function escapeHtml(str) {
+                const div = document.createElement('div');
+                div.textContent = str;
+                return div.innerHTML;
+            }
             bookGrid.innerHTML = books.map(book => {
                 const src = getCoverImageUrl(book);
                 return `
                     <a href="#" class="book-item">
                         <div class="book-img-wrapper">
-                            <img src="${src}" alt="${book.name}" loading="lazy" onerror="this.onerror=null; this.src='/images/SGK-Toan1.1.png';">
+                            <img src="${src}" alt="${escapeHtml(book.name)}" loading="lazy" onerror="this.onerror=null; this.src='/images/SGK-Toan1.1.png';">
                         </div>
                         <div class="book-title-pill">
-                            <p class="book-item-title">${book.name}</p>
+                            <p class="book-item-title">${escapeHtml(book.name)}</p>
                         </div>
                     </a>
                 `;
