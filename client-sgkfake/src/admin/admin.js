@@ -241,6 +241,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     document.getElementById('btnAddBook').addEventListener('click', () => {
+        closeBookModalFn();
         openBookModal();
     });
 
@@ -323,27 +324,19 @@ document.addEventListener('DOMContentLoaded', () => {
         if (file) formData.append('cover_image', file);
 
         try {
-            if (editingBookId) {
-                const response = await fetch(`/api/admin/books/${editingBookId}`, {
-                    method: 'PUT',
-                    headers: { 'Authorization': `Bearer ${SGKAuth.authFetch()}` },
-                    body: formData
-                });
-                if (!response.ok) {
-                    throw new Error(`Lỗi server ${response.status}`);
-                }
-                showToast('Cập nhật sách thành công');
-            } else {
-                const response =  await fetch('/api/admin/books', {
-                    method: 'POST',
-                    headers: { 'Authorization': `Bearer ${SGKAuth.authFetch()}` },
-                    body: formData
-                });
-                if (!response.ok) {
-                    throw new Error(`Lỗi server ${response.status}`);
-                }
-                showToast('Thêm sách thành công');
+            const url = editingBookId ? `/api/admin/books/${editingBookId}` : '/api/admin/books';
+            const method = editingBookId ? 'PUT' : 'POST';
+            const response = await SGKAuth.authFetch(url, {
+                method,
+                body: formData
+            });
+
+            if (!response.ok) {
+                const errData = await response.json().catch(() => ({}));
+                throw new Error(errData.error || `Lỗi server ${response.status}`);
             }
+
+            showToast(editingBookId ? 'Cập nhật sách thành công' : 'Thêm sách thành công');
             closeBookModalFn();
             loadBooks();
         } catch (err) {
@@ -352,21 +345,25 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Delete book
+    let deletingBookId = null;
+
     window.confirmDeleteBook = function (id, name) {
+        if (deletingBookId === id) return;
         if (!confirm(`Xác nhận xóa sách "${name}"?`)) return;
         deleteBook(id);
     };
 
     async function deleteBook(id) {
+        if (deletingBookId === id) return;
+        deletingBookId = id;
         try {
-            const response = await apiFetch(`/api/admin/books/${id}`, { method: 'DELETE' });
-            if (!response.ok) {
-                throw new Error(`Lỗi server ${response.status}`);
-            }
+            await apiFetch(`/api/admin/books/${id}`, { method: 'DELETE' });
             showToast('Xóa sách thành công');
             loadBooks();
         } catch (err) {
             showToast(err.message || 'Xóa sách thất bại', 'error');
+        } finally {
+            deletingBookId = null;
         }
     }
 

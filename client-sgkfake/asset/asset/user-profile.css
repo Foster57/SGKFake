@@ -1,26 +1,151 @@
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap');
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: "Be Vietnam Pro", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #f8fafc;
+    color: #0f172a;
+    line-height: 1.5;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+}
+
 .profile-container {
     width: 100%;
-    max-width: 420px;
-    padding: 20px;
-    box-sizing: border-box;
-    margin: 100px auto;
-    background-color: #fff;
+    max-width: 480px;
+    background: #ffffff;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+    overflow: hidden;
 }
 
-h1 {
+.profile-header {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    padding: 32px 28px;
     text-align: center;
-    margin-bottom: 20px;
-    color: #181525;
-    font-size: 24px;
+    color: #ffffff;
 }
 
-.profile-info {
-    margin-bottom: 15px;
+.avatar-icon {
+    width: 72px;
+    height: 72px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+    color: #ffffff;
 }
 
-.profile-info label {
+.avatar-icon svg {
+    width: 40px;
+    height: 40px;
+}
+
+.profile-header h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0;
+    text-align: center;
+}
+
+.profile-body {
+    padding: 28px 28px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.info-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.info-group label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.info-value {
+    font-size: 15px;
+    font-weight: 500;
+    color: #1e293b;
+    padding: 10px 14px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    word-break: break-all;
+}
+
+.profile-footer {
+    padding: 0 28px 28px;
+}
+
+.btn-back {
     display: block;
-    margin-bottom: 5px;
-    font-weight: bold;
-    color: #5c4790;
+    width: 100%;
+    padding: 12px 20px;
+    background: #eff6ff;
+    color: #2563eb;
+    border: 1px solid #bfdbfe;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.btn-back:hover {
+    background: #dbeafe;
+    border-color: #93c5fd;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    body {
+        padding: 16px 12px;
+        align-items: flex-start;
+    }
+
+    .profile-header {
+        padding: 24px 20px;
+    }
+
+    .profile-header h1 {
+        font-size: 18px;
+    }
+
+    .avatar-icon {
+        width: 60px;
+        height: 60px;
+    }
+
+    .avatar-icon svg {
+        width: 32px;
+        height: 32px;
+    }
+
+    .profile-body {
+        padding: 20px 20px 16px;
+    }
+
+    .profile-footer {
+        padding: 0 20px 20px;
+    }
 }

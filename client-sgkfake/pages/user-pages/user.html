@@ -113,8 +113,9 @@
         </ul>
     </div>
 
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
     <div class="main-content">
-        <aside class="sidebar-wrapper">
+        <aside class="sidebar-wrapper" id="sidebarWrapper">
             <div class="sidebar-box">
                 <h3 class="sidebar-title">Loại sách</h3>
                 <ul class="sidebar-list">
@@ -172,6 +173,10 @@
         </aside>
 
         <section class="book-section">
+            <button class="mobile-filter-btn" id="mobileFilterBtn">
+                <i class="ri-filter-line"></i>
+                Lọc sách
+            </button>
             <div class="book-grid" id="bookGrid"></div>
         </section>
     </div>
@@ -179,6 +184,27 @@
     <script src="/src/auth.js"></script>
     <script src="/src/route-guard.js" data-require-auth="true"></script>
     <script src="/src/script.js"></script>
+    <script>
+        // Mobile sidebar drawer toggle
+        const mobileFilterBtn = document.getElementById('mobileFilterBtn');
+        const sidebarWrapper = document.getElementById('sidebarWrapper');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+        function openSidebar() {
+            sidebarWrapper.classList.add('open');
+            sidebarOverlay.classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeSidebar() {
+            sidebarWrapper.classList.remove('open');
+            sidebarOverlay.classList.remove('open');
+            document.body.style.overflow = '';
+        }
+
+        if (mobileFilterBtn) mobileFilterBtn.addEventListener('click', openSidebar);
+        if (sidebarOverlay) sidebarOverlay.addEventListener('click', closeSidebar);
+    </script>
 </body>
 
 </html>

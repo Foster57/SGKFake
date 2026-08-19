@@ -16,6 +16,11 @@
     <!-- Header -->
     <header class="header">
         <ul class="header-left">
+            <li>
+                <button class="admin-mobile-toggle" id="adminSidebarToggle" aria-label="Mở menu">
+                    <i class="ri-menu-line"></i>
+                </button>
+            </li>
             <li><img src="/img/img-home/icon.education.jpeg" class="logo-gd" alt="GD Logo"></li>
             <li><img src="/img/img-home/logo-olm.png" class="logo-olm" alt="OLM Logo"></li>
         </ul>
@@ -43,10 +48,13 @@
         </ul>
     </header>
 
+    <!-- Overlay for mobile sidebar -->
+    <div class="admin-sidebar-overlay" id="adminSidebarOverlay"></div>
+
     <!-- Layout -->
     <div class="admin-layout">
         <!-- Sidebar -->
-        <aside class="admin-sidebar">
+        <aside class="admin-sidebar" id="adminSidebar">
             <p class="admin-sidebar-title">Quản trị</p>
             <ul class="admin-nav">
                 <li>
@@ -263,6 +271,34 @@
     <script src="/src/auth.js"></script>
     <script src="/src/route-guard.js" data-require-auth="true" data-require-role="admin"></script>
     <script src="/src/admin/admin.js"></script>
+    <script>
+        // Admin mobile sidebar toggle
+        const adminSidebarToggle = document.getElementById('adminSidebarToggle');
+        const adminSidebar = document.getElementById('adminSidebar');
+        const adminSidebarOverlay = document.getElementById('adminSidebarOverlay');
+
+        function openAdminSidebar() {
+            adminSidebar.classList.add('open');
+            adminSidebarOverlay.classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeAdminSidebar() {
+            adminSidebar.classList.remove('open');
+            adminSidebarOverlay.classList.remove('open');
+            document.body.style.overflow = '';
+        }
+
+        if (adminSidebarToggle) adminSidebarToggle.addEventListener('click', openAdminSidebar);
+        if (adminSidebarOverlay) adminSidebarOverlay.addEventListener('click', closeAdminSidebar);
+
+        // Close sidebar when nav link is clicked on mobile
+        document.querySelectorAll('.admin-nav-link').forEach(link => {
+            link.addEventListener('click', () => {
+                if (window.innerWidth < 900) closeAdminSidebar();
+            });
+        });
+    </script>
 </body>
 
 </html>

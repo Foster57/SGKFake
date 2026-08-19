@@ -26,6 +26,7 @@ body {
     top: 0;
     z-index: 100;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+    min-width: 0;
 }
 
 .header-left {
@@ -159,6 +160,42 @@ body {
     color: #2563eb;
 }
 
+/* ===== MOBILE SIDEBAR TOGGLE ===== */
+.admin-mobile-toggle {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    background: #f8fafc;
+    color: #475569;
+    font-size: 22px;
+    cursor: pointer;
+    margin-right: 12px;
+    flex-shrink: 0;
+    transition: all 0.15s ease;
+}
+
+.admin-mobile-toggle:hover {
+    background: #f1f5f9;
+    color: #1e293b;
+}
+
+.admin-sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.4);
+    z-index: 90;
+    backdrop-filter: blur(2px);
+}
+
+.admin-sidebar-overlay.open {
+    display: block;
+}
+
 /* ===== ADMIN LAYOUT ===== */
 .admin-layout {
     display: flex;
@@ -231,12 +268,15 @@ body {
     padding: 32px 40px;
     max-width: 1200px;
     min-width: 0;
+    overflow-x: hidden;
 }
 
 .admin-page-header {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
     margin-bottom: 28px;
 }
 
@@ -265,6 +305,7 @@ body {
 .admin-toolbar {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: 12px;
     margin-bottom: 20px;
 }
@@ -339,7 +380,9 @@ body {
     border: 1px solid #e2e8f0;
     border-radius: 16px;
     overflow: hidden;
+    overflow-x: auto;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    -webkit-overflow-scrolling: touch;
 }
 
 .admin-table {
@@ -518,7 +561,7 @@ body {
 .modal {
     background: #ffffff;
     border-radius: 20px;
-    width: 100%;
+    width: calc(100% - 32px);
     max-width: 560px;
     max-height: 90vh;
     overflow-y: auto;
@@ -623,6 +666,12 @@ body {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 16px;
+}
+
+@media (max-width: 480px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
 }
 
 /* File Upload */
@@ -736,16 +785,130 @@ body {
 }
 
 /* ===== RESPONSIVE ===== */
-@media (max-width: 900px) {
-    .admin-sidebar {
-        display: none;
+
+/* Tablet */
+@media (max-width: 1024px) {
+    .header {
+        padding: 12px 20px;
     }
 
     .admin-main {
-        padding: 24px 20px;
+        padding: 24px 24px;
+    }
+}
+
+/* Mobile */
+@media (max-width: 900px) {
+    /* Show hamburger toggle in header */
+    .admin-mobile-toggle {
+        display: inline-flex;
     }
 
-    .admin-table-wrapper {
-        overflow-x: auto;
+    /* Sidebar becomes a slide-in drawer */
+    .admin-sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        z-index: 100;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+        top: 0;
+        padding-top: 80px;
+    }
+
+    .admin-sidebar.open {
+        transform: translateX(0);
+    }
+
+    .admin-main {
+        padding: 20px 16px;
+    }
+
+    .admin-page-header {
+        margin-bottom: 16px;
+    }
+
+    .admin-page-title {
+        font-size: 20px;
+    }
+
+    .admin-search {
+        max-width: 100%;
+        width: 100%;
+        flex: 1 1 200px;
+    }
+
+    .btn-add {
+        flex-shrink: 0;
+    }
+}
+
+/* Mobile small */
+@media (max-width: 600px) {
+    .header {
+        padding: 10px 12px;
+    }
+
+    .header-right {
+        gap: 8px;
+    }
+
+    .admin-badge {
+        font-size: 11px;
+        padding: 5px 10px;
+    }
+
+    .admin-main {
+        padding: 16px 12px;
+    }
+
+    .admin-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .btn-add {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .admin-page-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .modal-header {
+        padding: 16px 20px 0;
+    }
+
+    .modal-body {
+        padding: 16px 20px;
+    }
+
+    .modal-footer {
+        padding: 0 20px 16px;
+        flex-wrap: wrap;
+    }
+
+    .btn-cancel,
+    .btn-save {
+        flex: 1;
+        text-align: center;
+        justify-content: center;
+    }
+
+    .admin-table thead th {
+        padding: 10px 12px;
+        font-size: 11px;
+    }
+
+    .admin-table td {
+        padding: 10px 12px;
+        font-size: 13px;
+    }
+
+    .admin-page-title {
+        font-size: 18px;
     }
 }

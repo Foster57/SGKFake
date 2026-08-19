@@ -26,6 +26,7 @@ body {
     top: 0;
     z-index: 100;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+    min-width: 0;
 }
 
 .header-left {
@@ -223,6 +224,7 @@ body {
     letter-spacing: -0.5px;
     margin-bottom: 12px;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    word-break: break-word;
 }
 
 .banner-subtitle {
@@ -330,6 +332,43 @@ body {
     display: block;
 }
 
+/* ===== MOBILE FILTER TOGGLE (hidden on desktop) ===== */
+.mobile-filter-btn {
+    display: none;
+    width: 100%;
+    padding: 10px 16px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #475569;
+    cursor: pointer;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.mobile-filter-btn:hover {
+    background: #f8fafc;
+    border-color: #3b82f6;
+    color: #2563eb;
+}
+
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.4);
+    z-index: 50;
+    backdrop-filter: blur(2px);
+}
+
+.sidebar-overlay.open {
+    display: block;
+}
+
 /* ===== MAIN CONTENT LAYOUT ===== */
 .main-content {
     display: flex;
@@ -347,6 +386,7 @@ body {
     display: flex;
     flex-direction: column;
     gap: 20px;
+    transition: transform 0.3s ease;
 }
 
 .sidebar-box {
@@ -478,17 +518,6 @@ body {
     gap: 24px;
 }
 
-@media (max-width: 1024px) {
-    .book-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-@media (max-width: 640px) {
-    .book-grid {
-        grid-template-columns: 1fr;
-    }
-}
 
 .book-item {
     display: flex;
@@ -566,4 +595,271 @@ body {
     background: #ffffff;
     border-radius: 16px;
     border: 1px dashed #cbd5e1;
+}
+
+/* ===== RESPONSIVE BREAKPOINTS ===== */
+
+/* Tablet */
+@media (max-width: 1024px) {
+    .header {
+        padding: 12px 20px;
+    }
+
+    .main-content {
+        gap: 20px;
+        padding: 16px 16px 40px;
+    }
+
+    .sidebar-wrapper {
+        width: 220px;
+    }
+
+    .menu-section {
+        padding: 16px 16px 12px;
+        gap: 10px;
+    }
+}
+
+/* Mobile (≤768px) */
+@media (max-width: 768px) {
+    /* Header */
+    .header {
+        padding: 10px 16px;
+    }
+
+    .header-left {
+        gap: 10px;
+    }
+
+    .header-right {
+        gap: 8px;
+    }
+
+    /* Hide text label on btn-bookstore on small screens */
+    .btn-bookstore span {
+        display: none;
+    }
+
+    .btn-bookstore {
+        padding: 8px 10px;
+    }
+
+    /* Banner */
+    .banner {
+        padding: 28px 16px;
+    }
+
+    .banner-title {
+        font-size: 20px;
+        margin-bottom: 8px;
+    }
+
+    .banner-subtitle {
+        font-size: 16px;
+    }
+
+    /* Grade menu */
+    .menu-section {
+        padding: 12px 12px 8px;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .menu-label {
+        font-size: 14px;
+        margin-right: 0;
+        width: 100%;
+        text-align: center;
+    }
+
+    .menu-link {
+        min-width: 36px;
+        height: 36px;
+        padding: 0 10px;
+        font-size: 14px;
+        border-radius: 8px;
+    }
+
+    /* Main content: stack sidebar + content vertically */
+    .main-content {
+        flex-direction: column;
+        gap: 0;
+        padding: 12px 12px 40px;
+    }
+
+    /* Show mobile filter toggle button */
+    .mobile-filter-btn {
+        display: inline-flex;
+        margin-bottom: 12px;
+    }
+
+    /* Sidebar becomes a slide-in drawer from left */
+    .sidebar-wrapper {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 280px;
+        height: 100vh;
+        background: #ffffff;
+        z-index: 60;
+        padding: 20px 12px;
+        overflow-y: auto;
+        transform: translateX(-100%);
+        box-shadow: 4px 0 24px rgba(0, 0, 0, 0.12);
+        gap: 16px;
+    }
+
+    .sidebar-wrapper.open {
+        transform: translateX(0);
+    }
+
+    /* Book section fills full width */
+    .book-section {
+        width: 100%;
+    }
+
+    /* Book grid: 2 columns */
+    .book-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+
+    .book-img-wrapper {
+        height: 180px;
+    }
+
+    .book-item-title {
+        font-size: 13px;
+    }
+
+    /* User dropdown: prevent overflow */
+    .user-dropdown {
+        right: -8px;
+        width: 180px;
+    }
+}
+
+/* Mobile small (≤480px) */
+@media (max-width: 480px) {
+    /* Header: tighten further */
+    .header {
+        padding: 8px 12px;
+    }
+
+    .header-left .logo-olm {
+        height: 28px;
+    }
+
+    .header-left .logo-gd {
+        width: 28px;
+        height: 28px;
+    }
+
+    /* Hide bookstore btn entirely on very small screens */
+    .btn-bookstore {
+        display: none;
+    }
+
+    /* Banner */
+    .banner {
+        padding: 20px 12px;
+    }
+
+    .banner-title {
+        font-size: 17px;
+    }
+
+    .banner-subtitle {
+        font-size: 14px;
+    }
+
+    /* Grade menu scrollable on tiny screens */
+    .menu-section {
+        padding: 10px 10px 6px;
+    }
+
+    .menu-list {
+        gap: 6px;
+    }
+
+    .menu-link {
+        min-width: 32px;
+        height: 32px;
+        padding: 0 8px;
+        font-size: 13px;
+    }
+
+    /* Main content */
+    .main-content {
+        padding: 8px 8px 32px;
+    }
+
+    /* Book grid: 2 columns on tiny (if wide enough), else 1 */
+    .book-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+    .book-img-wrapper {
+        height: 150px;
+    }
+
+    .book-title-pill {
+        padding: 8px 8px;
+    }
+
+    .book-item-title {
+        font-size: 12px;
+    }
+
+    /* Sidebar drawer full-width on tiny screens */
+    .sidebar-wrapper {
+        width: 100%;
+        height: auto;
+        max-height: 75vh;
+        top: auto;
+        bottom: 0;
+        left: 0;
+        transform: translateY(100%);
+        border-radius: 20px 20px 0 0;
+        padding: 20px 16px;
+        box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.15);
+    }
+
+    .sidebar-wrapper.open {
+        transform: translateY(0);
+    }
+
+    /* Buttons in header */
+    .btn {
+        font-size: 13px;
+        padding: 7px 12px;
+    }
+
+    .icon-btn {
+        width: 36px;
+        height: 36px;
+        font-size: 18px;
+    }
+
+    .user-avatar-btn {
+        width: 36px;
+        height: 36px;
+        font-size: 19px;
+    }
+}
+
+/* Extra small (≤375px) */
+@media (max-width: 375px) {
+    .book-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .banner-title {
+        font-size: 15px;
+    }
+
+    .banner-subtitle {
+        font-size: 13px;
+    }
 }

@@ -48,7 +48,7 @@
         <div class="spinner"></div>
         <div>Đang xác thực, vui lòng chờ...</div>
     </div>
-
+    <script src="../../src/auth.js"></script>
     <script>
         (async function () {
             const urlParams = new URLSearchParams(window.location.search);
@@ -61,7 +61,7 @@
             }
 
             try {
-                const response = await fetch('/api/users/exchange', {
+                const response = await SGKAuth.authFetch('/api/users/exchange', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'include',
