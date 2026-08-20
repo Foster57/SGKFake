@@ -55,6 +55,7 @@ async function authFetch(url, options = {}) {
         } catch (err) {
             setAccessToken(null);
             localStorage.removeItem('userData');
+            localStorage.removeItem('selectedGrade');
             throw err;
         }
     }
@@ -69,6 +70,7 @@ async function logout() {
     }
     setAccessToken(null);
     localStorage.removeItem('userData');
+    localStorage.removeItem('selectedGrade');
     sessionStorage.removeItem('resetEmail');
     // Cookie accessToken đã được server clear qua Set-Cookie
 }
@@ -79,13 +81,17 @@ async function logout() {
  */
 async function checkAuth() {
     const token = getAccessToken();
-    if (!token) return { authenticated: false };
+    if (!token) {
+        localStorage.removeItem('selectedGrade');
+        return { authenticated: false };
+    }
 
     try {
         const res = await authFetch('/api/users/me');
         if (!res.ok) {
             setAccessToken(null);
             localStorage.removeItem('userData');
+            localStorage.removeItem('selectedGrade');
             return { authenticated: false };
         }
         const user = await res.json();
@@ -94,6 +100,7 @@ async function checkAuth() {
     } catch {
         setAccessToken(null);
         localStorage.removeItem('userData');
+        localStorage.removeItem('selectedGrade');
         return { authenticated: false };
     }
 }

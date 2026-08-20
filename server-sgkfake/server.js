@@ -21,7 +21,7 @@ app.use('/asset', express.static(path.join(__dirname, '..', 'client-sgkfake', 'a
 app.use('/src', express.static(path.join(__dirname, '..', 'client-sgkfake', 'src')));
 app.use('/img', express.static(path.join(__dirname, '..', 'client-sgkfake', 'img')));
 app.use('/images', express.static(path.join(__dirname, '..', 'client-sgkfake', 'img', 'img-subject')));
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/uploads', express.static(path.join(__dirname, '..', 'client-sgkfake', 'uploads')));
 
 // API Routes
 app.use('/api/users', authRoutes);

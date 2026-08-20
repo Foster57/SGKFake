@@ -115,11 +115,6 @@ subjectCheckboxes.forEach(checkbox => {
     });
 });
 
-// Initial Load
-if (bookGrid) {
-    loadBooks(1, [], 'sgk');
-}
-
 // User Profile Dropdown Handler
 const userMenu = document.querySelector('.user-menu-wrapper');
 const userDropdown = document.querySelector('.user-dropdown');
@@ -169,3 +164,36 @@ if (logoutBtn) {
         window.location.href = '/login';
     });
 }
+// 1. Lấy lớp đã lưu từ localStorage (mặc định '1' nếu chưa có)
+const savedGrade = localStorage.getItem('selectedGrade') || '1';
+// 2. Hàm helper cập nhật class active trên thanh menu Lớp
+function setActiveGradeUI(grade) {
+    document.querySelectorAll('.menu-link').forEach(link => {
+        const isSelected = String(link.dataset.grade) === String(grade);
+        link.classList.toggle('active', isSelected);
+        if (link.parentElement) {
+            link.parentElement.classList.toggle('active', isSelected);
+        }
+    });
+}
+
+// 3. Khởi chạy khi tải trang
+if (bookGrid) {
+    setActiveGradeUI(savedGrade); // Đổi nút active theo lớp đã lưu
+    loadBooks(savedGrade, [], 'sgk'); // Tải sách tương ứng
+}
+
+document.querySelectorAll('.menu-link').forEach(link => {
+    link.addEventListener('click', (e) => {
+        e.preventDefault();
+
+        const selectedGrade = link.dataset.grade;
+
+        // 🔹 Lưu Lớp vừa chọn vào localStorage
+        localStorage.setItem('selectedGrade', selectedGrade);
+
+        setActiveGradeUI(selectedGrade);
+        loadBooks(selectedGrade, currentSubjects, currentBookType);
+    });
+});
+
