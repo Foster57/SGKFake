@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const token = localStorage.getItem('accessToken');
+        const token = getCookie('accessToken');
         if (!token) {
             alert('Vui lòng đăng nhập trước khi đổi mật khẩu.');
             window.location.href = '/login';

@@ -2,10 +2,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ==================== AUTH GUARD ====================
     // Client-side guard bổ sung (server-side page guard đã kiểm tra trước)
-    const token = localStorage.getItem('accessToken');
+    const token = getCookie('accessToken');
     const userData = JSON.parse(localStorage.getItem('userData'));
     if (!token || !userData || userData.role !== 'admin') {
-        localStorage.removeItem('accessToken');
+        removeCookie('accessToken');
         localStorage.removeItem('userData');
         window.location.replace('/login');
         return;

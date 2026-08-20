@@ -74,7 +74,7 @@
                 }
 
                 if (data.accessToken) {
-                    localStorage.setItem('accessToken', data.accessToken);
+                    setCookie('accessToken', data.accessToken, 30);
                 }
                 if (data.user) {
                     localStorage.setItem('userData', JSON.stringify(data.user));

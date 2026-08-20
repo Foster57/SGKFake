@@ -1,5 +1,21 @@
-// Client auth helper: mutex refresh (D) + wrapper tự refresh khi access token hết hạn
-let accessToken = localStorage.getItem('accessToken');
+
+function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return decodeURIComponent(parts.pop().split(';').shift());
+    return null;
+}
+
+function setCookie(name, value, days) {
+    const expires = new Date(Date.now() + days * 864e5).toUTCString();
+    document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Lax`;
+}
+
+function removeCookie(name) {
+    document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Lax`;
+}
+
+let accessToken = getCookie('accessToken');
 let refreshPromise = null;
 
 function getAccessToken() {
@@ -9,9 +25,9 @@ function getAccessToken() {
 function setAccessToken(token) {
     accessToken = token;
     if (token) {
-        localStorage.setItem('accessToken', token);
+        setCookie('accessToken', token, 30);
     } else {
-        localStorage.removeItem('accessToken');
+        removeCookie('accessToken');
     }
 }
 
@@ -55,7 +71,6 @@ async function authFetch(url, options = {}) {
         } catch (err) {
             setAccessToken(null);
             localStorage.removeItem('userData');
-            localStorage.removeItem('selectedGrade');
             throw err;
         }
     }
@@ -70,7 +85,6 @@ async function logout() {
     }
     setAccessToken(null);
     localStorage.removeItem('userData');
-    localStorage.removeItem('selectedGrade');
     sessionStorage.removeItem('resetEmail');
     // Cookie accessToken đã được server clear qua Set-Cookie
 }
@@ -81,17 +95,13 @@ async function logout() {
  */
 async function checkAuth() {
     const token = getAccessToken();
-    if (!token) {
-        localStorage.removeItem('selectedGrade');
-        return { authenticated: false };
-    }
+    if (!token) return { authenticated: false };
 
     try {
         const res = await authFetch('/api/users/me');
         if (!res.ok) {
             setAccessToken(null);
             localStorage.removeItem('userData');
-            localStorage.removeItem('selectedGrade');
             return { authenticated: false };
         }
         const user = await res.json();
@@ -100,7 +110,6 @@ async function checkAuth() {
     } catch {
         setAccessToken(null);
         localStorage.removeItem('userData');
-        localStorage.removeItem('selectedGrade');
         return { authenticated: false };
     }
 }

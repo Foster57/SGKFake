@@ -157,7 +157,7 @@ if (logoutBtn) {
         if (window.SGKAuth) {
             await SGKAuth.logout();
         } else {
-            localStorage.removeItem('accessToken');
+            removeCookie('accessToken');
             localStorage.removeItem('userData');
             sessionStorage.removeItem('resetEmail');
         }

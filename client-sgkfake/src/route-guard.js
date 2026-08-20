@@ -22,7 +22,7 @@
     document.documentElement.style.visibility = 'hidden';
 
     async function checkAuth() {
-        const token = localStorage.getItem('accessToken');
+        const token = getCookie('accessToken');
 
         // Không có token → chuyển login ngay
         if (!token) {
@@ -96,7 +96,7 @@
     }
 
     function clearAuthData() {
-        localStorage.removeItem('accessToken');
+        removeCookie('accessToken');
         localStorage.removeItem('userData');
         sessionStorage.removeItem('resetEmail');
     }
@@ -105,7 +105,7 @@
     window.addEventListener('pageshow', function (event) {
         if (event.persisted) {
             // Page restored từ bfcache (back/forward)
-            const token = localStorage.getItem('accessToken');
+            const token = getCookie('accessToken');
             if (!token) {
                 redirectToLogin();
             }

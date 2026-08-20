@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Lưu access token và thông tin người dùng (refresh token nằm trong httpOnly cookie)
             if (result.accessToken) {
-                localStorage.setItem('accessToken', result.accessToken);
+                setCookie('accessToken', result.accessToken, 30);
             }
             if (result.user) {
                 localStorage.setItem('userData', JSON.stringify(result.user));
