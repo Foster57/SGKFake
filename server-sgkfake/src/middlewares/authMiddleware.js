@@ -3,7 +3,7 @@ const pool = require('../config/db');
 
 function authenticate(req, res, next) {
     const authHeader = req.headers.authorization;
-    const token = authHeader?.startsWith('Bearer ') ? authHeader.split(' ')[1] : req.cookies?.token;
+    const token = authHeader?.startsWith('Bearer ') ? authHeader.split(' ')[1] : (req.cookies?.accessToken || req.cookies?.token);
     if (!token) {
         return res.status(401).json({ error: 'Vui lòng đăng nhập' });
     }

@@ -9,6 +9,7 @@ async function getBooks(req, res) {
               s.slug AS subject_slug
        FROM books b
        LEFT JOIN subject s ON b.subject_id = s.id
+       WHERE b.is_active = true
        ORDER BY b.id`
     );
     res.json(result.rows);
@@ -20,13 +21,13 @@ async function getBooks(req, res) {
 
 async function createBook(req, res) {
   const { name, grade, subject_id, book_type } = req.body;
-  const cover_image_url = req.file ? `/uploads/${req.file.filename}` : null;
+  const cover_image_url = req.file ? `/uploads/${req.file.filename}` : (req.body.cover_image_url || null);
   try {
     if (!name || !grade || !subject_id) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
     const result = await pool.query(
-      'INSERT INTO books (name, grade, subject_id, book_type, cover_image_url) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+      'INSERT INTO books (name, grade, subject_id, book_type, cover_image_url, is_active) VALUES ($1, $2, $3, $4, $5, true) RETURNING *',
       [name, grade, subject_id, book_type || 'sgk', cover_image_url]
     );
     res.status(201).json(result.rows[0]);
@@ -39,9 +40,9 @@ async function createBook(req, res) {
 async function updateBook(req, res) {
   const bookId = req.params.id;
   const { name, grade, subject_id, book_type } = req.body;
-  const cover_image_url = req.file ? `/uploads/${req.file.filename}` : null;
+  const cover_image_url = req.file ? `/uploads/${req.file.filename}` : (req.body.cover_image_url || null);
   try {
-    const existing = await pool.query('SELECT * FROM books WHERE id = $1', [bookId]);
+    const existing = await pool.query('SELECT * FROM books WHERE id = $1 AND is_active = true', [bookId]);
     if (existing.rows.length === 0) {
       return res.status(404).json({ error: 'Không tìm thấy sách' });
     }
@@ -65,7 +66,7 @@ async function updateBook(req, res) {
 async function deleteBook(req, res) {
   const bookId = req.params.id;
   try {
-    const result = await pool.query('DELETE FROM books WHERE id = $1 RETURNING id', [bookId]);
+    const result = await pool.query('UPDATE books SET is_active = false WHERE id = $1 and is_active = true RETURNING id', [bookId]);
     if (result.rowCount === 0) {
       return res.status(404).json({ error: 'Không tìm thấy sách' });
     }
@@ -83,7 +84,8 @@ async function getSubjects(req, res) {
     const result = await pool.query(
       `SELECT s.id, s.slug, COUNT(b.id) AS book_count
        FROM subject s
-       LEFT JOIN books b ON s.id = b.subject_id
+       LEFT JOIN books b ON s.id = b.subject_id AND b.is_active = true
+       WHERE s.is_active = true
        GROUP BY s.id, s.slug
        ORDER BY s.id`
     );
@@ -101,7 +103,7 @@ async function createSubject(req, res) {
       return res.status(400).json({ error: 'Missing required field: slug' });
     }
     const result = await pool.query(
-      'INSERT INTO subject (slug) VALUES ($1) RETURNING *',
+      'INSERT INTO subject (slug, is_active) VALUES ($1, true) RETURNING *',
       [slug]
     );
     res.status(201).json(result.rows[0]);
@@ -118,12 +120,12 @@ async function updateSubject(req, res) {
     if (!slug) {
       return res.status(400).json({ error: 'Missing required field: slug' });
     }
-    const existing = await pool.query('SELECT * FROM subject WHERE id = $1', [subjectId]);
+    const existing = await pool.query('SELECT * FROM subject WHERE id = $1 AND is_active = true', [subjectId]);
     if (existing.rows.length === 0) {
       return res.status(404).json({ error: 'Không tìm thấy môn học' });
     }
     const result = await pool.query(
-      'UPDATE subject SET slug = $1 WHERE id = $2 RETURNING *',
+      'UPDATE subject SET slug = $1 WHERE id = $2 AND is_active = true RETURNING *',
       [slug, subjectId]
     );
     res.json(result.rows[0]);
@@ -139,7 +141,7 @@ async function updateSubject(req, res) {
 async function deleteSubject(req, res) {
   const subjectId = req.params.id;
   try {
-    const result = await pool.query('DELETE FROM subject WHERE id = $1 RETURNING id', [subjectId]);
+    const result = await pool.query('UPDATE subject SET is_active = false WHERE id = $1 AND is_active = true RETURNING id', [subjectId]);
     if (result.rowCount === 0) {
       return res.status(404).json({ error: 'Không tìm thấy môn học' });
     }
@@ -155,7 +157,7 @@ async function deleteSubject(req, res) {
 async function listUsers(req, res) {
   try {
     const result = await pool.query(
-      'SELECT user_id, user_account, email, role, is_active FROM users ORDER BY user_id'
+      'SELECT user_id, user_account, email, role, is_active FROM users WHERE is_active = true ORDER BY user_id'
     );
     res.json(result.rows);
   } catch (err) {
@@ -171,7 +173,7 @@ async function updateUserRole(req, res) {
     if (!role || !['user', 'admin'].includes(role)) {
       return res.status(400).json({ error: 'Role không hợp lệ (chỉ chấp nhận user hoặc admin)' });
     }
-    const existing = await pool.query('SELECT user_id FROM users WHERE user_id = $1', [userId]);
+    const existing = await pool.query('SELECT user_id FROM users WHERE user_id = $1 AND is_active = true', [userId]);
     if (existing.rows.length === 0) {
       return res.status(404).json({ error: 'Không tìm thấy người dùng' });
     }

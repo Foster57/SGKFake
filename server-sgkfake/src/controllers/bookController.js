@@ -17,18 +17,31 @@ async function getBooks(req, res) {
     SELECT b.id, b.name, b.cover_image_url
     FROM books b
     LEFT JOIN subject s ON b.subject_id = s.id
-    WHERE b.grade = $1
+    WHERE b.grade = $1 AND b.is_active = true
   `;
   const params = [gradeNum];
 
   if (subject) {
-    const subjects = String(subject).split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
-    if (subjects.length === 1) {
-      params.push(subjects[0]);
-      query += ` AND b.subject_id = $${params.length}`;
-    } else if (subjects.length > 1) {
-      params.push(subjects);
-      query += ` AND b.subject_id = ANY($${params.length}::int[])`;
+    const rawSubjects = String(subject).split(',').map(s => s.trim()).filter(Boolean);
+    const numericSubjects = rawSubjects.map(s => parseInt(s, 10)).filter(n => !isNaN(n));
+    const stringSubjects = rawSubjects.filter(s => Number.isNaN(parseInt(s, 10)));
+
+    if (numericSubjects.length > 0) {
+      if (numericSubjects.length === 1) {
+        params.push(numericSubjects[0]);
+        query += ` AND b.subject_id = $${params.length}`;
+      } else {
+        params.push(numericSubjects);
+        query += ` AND b.subject_id = ANY($${params.length}::int[])`;
+      }
+    } else if (stringSubjects.length > 0) {
+      if (stringSubjects.length === 1) {
+        params.push(stringSubjects[0]);
+        query += ` AND s.slug = $${params.length}`;
+      } else {
+        params.push(stringSubjects);
+        query += ` AND s.slug = ANY($${params.length}::text[])`;
+      }
     }
   }
   if (type) {

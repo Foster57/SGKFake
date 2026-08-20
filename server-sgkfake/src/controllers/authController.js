@@ -115,7 +115,7 @@ function setAccessCookie(res, accessToken) {
 }
 
 function clearRefreshCookie(res) {
-  res.clearCookie(REFRESH_COOKIE_NAME, { path: '/api/users' });
+  res.clearCookie(REFRESH_COOKIE_NAME, REFRESH_COOKIE_OPTIONS);
 }
 
 function clearAccessCookie(res) {
