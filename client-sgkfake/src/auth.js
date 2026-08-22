@@ -15,20 +15,30 @@ function removeCookie(name) {
     document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Lax`;
 }
 
-let accessToken = getCookie('accessToken');
+// ── Auth state ──────────────────────────────────────────────
+// accessToken giờ là httpOnly cookie — client không thể đọc.
+// Browser tự gửi cookie cho mọi same-origin request.
+// Trạng thái "đã đăng nhập" được theo dõi qua localStorage('userData') như một hint.
 let refreshPromise = null;
 
-function getAccessToken() {
-    return accessToken;
+function isLoggedIn() {
+    return !!localStorage.getItem('userData');
 }
 
-function setAccessToken(token) {
-    accessToken = token;
-    if (token) {
-        setCookie('accessToken', token, 30);
-    } else {
-        removeCookie('accessToken');
-    }
+/**
+ * Backward-compatible getter.
+ * Trả về true/false thay vì token string (vì token giờ httpOnly).
+ */
+function getAccessToken() {
+    return isLoggedIn();
+}
+
+/**
+ * Server set/clear httpOnly cookie qua Set-Cookie header.
+ * Client chỉ quản lý localStorage hint — không ghi cookie.
+ */
+function setAccessToken(_token) {
+    // No-op: server handles httpOnly cookie via Set-Cookie header.
 }
 
 async function refreshAccessToken() {
@@ -42,11 +52,10 @@ async function refreshAccessToken() {
                     throw new Error('Refresh failed');
                 }
                 const data = await res.json();
-                setAccessToken(data.accessToken);
                 if (data.user) {
                     localStorage.setItem('userData', JSON.stringify(data.user));
                 }
-                return data.accessToken;
+                return true;
             })
             .finally(() => {
                 refreshPromise = null;
@@ -56,20 +65,17 @@ async function refreshAccessToken() {
 }
 
 async function authFetch(url, options = {}) {
-    const opts = { ...options, headers: { ...(options.headers || {}) } };
-    if (accessToken) {
-        opts.headers['Authorization'] = `Bearer ${accessToken}`;
-    }
+    // httpOnly cookie được browser gửi tự động cho same-origin requests.
+    // Không cần set Authorization header thủ công.
+    const opts = { ...options, credentials: 'include' };
 
     const res = await fetch(url, opts);
 
-    if (res.status === 401 && accessToken) {
+    if (res.status === 401 && isLoggedIn()) {
         try {
-            const newToken = await refreshAccessToken();
-            opts.headers['Authorization'] = `Bearer ${newToken}`;
+            await refreshAccessToken();
             return fetch(url, opts);
         } catch (err) {
-            setAccessToken(null);
             localStorage.removeItem('userData');
             throw err;
         }
@@ -83,10 +89,9 @@ async function logout() {
     } catch (err) {
         console.error('Logout error:', err);
     }
-    setAccessToken(null);
+    // Server clear httpOnly cookies qua Set-Cookie header
     localStorage.removeItem('userData');
     sessionStorage.removeItem('resetEmail');
-    // Cookie accessToken đã được server clear qua Set-Cookie
 }
 
 /**
@@ -94,13 +99,11 @@ async function logout() {
  * Trả về { authenticated, user } hoặc { authenticated: false }.
  */
 async function checkAuth() {
-    const token = getAccessToken();
-    if (!token) return { authenticated: false };
+    if (!isLoggedIn()) return { authenticated: false };
 
     try {
         const res = await authFetch('/api/users/me');
         if (!res.ok) {
-            setAccessToken(null);
             localStorage.removeItem('userData');
             return { authenticated: false };
         }
@@ -108,7 +111,6 @@ async function checkAuth() {
         localStorage.setItem('userData', JSON.stringify(user));
         return { authenticated: true, user };
     } catch {
-        setAccessToken(null);
         localStorage.removeItem('userData');
         return { authenticated: false };
     }
@@ -120,5 +122,6 @@ window.SGKAuth = {
     refreshAccessToken,
     authFetch,
     logout,
-    checkAuth
+    checkAuth,
+    isLoggedIn
 };

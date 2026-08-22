@@ -157,7 +157,7 @@ if (logoutBtn) {
         if (window.SGKAuth) {
             await SGKAuth.logout();
         } else {
-            removeCookie('accessToken');
+            // httpOnly cookie chỉ có thể clear bởi server
             localStorage.removeItem('userData');
             sessionStorage.removeItem('resetEmail');
         }
@@ -188,6 +188,11 @@ document.querySelectorAll('.menu-link').forEach(link => {
         e.preventDefault();
 
         const selectedGrade = link.dataset.grade;
+        if (logoutBtn) {
+            selectedGrade = '1'; // Reset to default grade on logout
+            localStorage.setItem('selectedGrade', selectedGrade);
+            return;
+        }
 
         // 🔹 Lưu Lớp vừa chọn vào localStorage
         localStorage.setItem('selectedGrade', selectedGrade);
@@ -196,4 +201,6 @@ document.querySelectorAll('.menu-link').forEach(link => {
         loadBooks(selectedGrade, currentSubjects, currentBookType);
     });
 });
+
+
 

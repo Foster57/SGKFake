@@ -73,9 +73,7 @@
                     throw new Error(data.error || 'Xác thực thất bại');
                 }
 
-                if (data.accessToken) {
-                    setCookie('accessToken', data.accessToken, 30);
-                }
+                // Server đã set accessToken httpOnly cookie qua Set-Cookie header
                 if (data.user) {
                     localStorage.setItem('userData', JSON.stringify(data.user));
                 }

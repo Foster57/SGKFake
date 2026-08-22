@@ -33,10 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // Lưu access token và thông tin người dùng (refresh token nằm trong httpOnly cookie)
-            if (result.accessToken) {
-                setCookie('accessToken', result.accessToken, 30);
-            }
+            // Server đã set accessToken httpOnly cookie qua Set-Cookie header
             if (result.user) {
                 localStorage.setItem('userData', JSON.stringify(result.user));
             }

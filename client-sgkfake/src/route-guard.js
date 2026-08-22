@@ -2,9 +2,9 @@
  * Client-side Route Guard (defense in depth)
  * 
  * Chạy trên mỗi protected page để:
- * 1. Kiểm tra access token tồn tại
+ * 1. Kiểm tra localStorage hint (userData)
  * 2. Kiểm tra role phù hợp (nếu cần)
- * 3. Verify token với server qua /api/users/me
+ * 3. Verify token với server qua /api/users/me (httpOnly cookie gửi tự động)
  * 4. Xử lý browser back/forward sau logout
  * 
  * Usage trong HTML:
@@ -22,18 +22,16 @@
     document.documentElement.style.visibility = 'hidden';
 
     async function checkAuth() {
-        const token = getCookie('accessToken');
-
-        // Không có token → chuyển login ngay
-        if (!token) {
+        // accessToken là httpOnly cookie — kiểm tra localStorage hint thay vì cookie
+        if (!localStorage.getItem('userData')) {
             redirectToLogin();
             return;
         }
 
         try {
-            // Verify token với server
+            // httpOnly cookie được browser gửi tự động — không cần Authorization header
             const res = await fetch('/api/users/me', {
-                headers: { 'Authorization': `Bearer ${token}` }
+                credentials: 'include'
             });
 
             if (res.status === 401) {
@@ -41,9 +39,9 @@
                 if (window.SGKAuth) {
                     try {
                         await SGKAuth.refreshAccessToken();
-                        // Retry
+                        // Retry — cookie mới đã được server set
                         const retryRes = await fetch('/api/users/me', {
-                            headers: { 'Authorization': `Bearer ${SGKAuth.getAccessToken()}` }
+                            credentials: 'include'
                         });
                         if (!retryRes.ok) throw new Error('Refresh failed');
                         const user = await retryRes.json();
@@ -96,7 +94,7 @@
     }
 
     function clearAuthData() {
-        removeCookie('accessToken');
+        // httpOnly cookie chỉ có thể clear bởi server (qua Set-Cookie)
         localStorage.removeItem('userData');
         sessionStorage.removeItem('resetEmail');
     }
@@ -105,8 +103,7 @@
     window.addEventListener('pageshow', function (event) {
         if (event.persisted) {
             // Page restored từ bfcache (back/forward)
-            const token = getCookie('accessToken');
-            if (!token) {
+            if (!localStorage.getItem('userData')) {
                 redirectToLogin();
             }
         }

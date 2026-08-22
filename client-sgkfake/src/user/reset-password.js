@@ -17,8 +17,8 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const token = getCookie('accessToken');
-        if (!token) {
+        // accessToken là httpOnly cookie — kiểm tra localStorage hint
+        if (!localStorage.getItem('userData')) {
             alert('Vui lòng đăng nhập trước khi đổi mật khẩu.');
             window.location.href = '/login';
             return;
@@ -28,8 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const response = await SGKAuth.authFetch('/api/users/change-password', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
                     oldPassword,

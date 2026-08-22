@@ -2,10 +2,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ==================== AUTH GUARD ====================
     // Client-side guard bổ sung (server-side page guard đã kiểm tra trước)
-    const token = getCookie('accessToken');
+    // accessToken là httpOnly cookie — kiểm tra localStorage hint
     const userData = JSON.parse(localStorage.getItem('userData'));
-    if (!token || !userData || userData.role !== 'admin') {
-        removeCookie('accessToken');
+    if (!userData || userData.role !== 'admin') {
         localStorage.removeItem('userData');
         window.location.replace('/login');
         return;
@@ -180,7 +179,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <tr>
                     <td class="id-cell">${book.id}</td>
                     <td class="image-cell">${imgCell}</td>
-                    <td><strong>${book.name}</strong></td>
+                    <td><strong>${escapeHtml(book.name)}</strong></td>
                     <td><span class="badge badge-grade">Lớp ${book.grade}</span></td>
                     <td><span class="badge badge-subject">${subjectLabel}</span></td>
                     <td>${typeBadge}</td>
@@ -189,7 +188,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             <button class="btn-icon edit" title="Chỉnh sửa" onclick="openEditBook(${book.id})">
                                 <i class="ri-edit-line"></i>
                             </button>
-                            <button class="btn-icon delete" title="Xóa" onclick="confirmDeleteBook(${book.id}, '${book.name.replace(/'/g, "\\'")}')">
+                            <button class="btn-icon delete" title="Xóa" onclick="confirmDeleteBook(${book.id}, '${escapeHtml(book.name).replace(/'/g, "\\'")}')">
                                 <i class="ri-delete-bin-line"></i>
                             </button>
                         </div>

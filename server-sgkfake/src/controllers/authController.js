@@ -19,7 +19,7 @@ const REFRESH_COOKIE_OPTIONS = {
 };
 const ACCESS_COOKIE_NAME = 'accessToken';
 const ACCESS_COOKIE_OPTIONS = {
-  httpOnly: false, // Client JS cần đọc cho Authorization header
+  httpOnly: true, // Ngăn XSS đánh cắp token qua document.cookie
   secure: process.env.NODE_ENV === 'production',
   sameSite: 'strict',
   path: '/',
@@ -31,6 +31,10 @@ const oauthCodes = new Map();
 
 function hashToken(token) {
   return crypto.createHash('sha256').update(token).digest('hex');
+}
+
+function hashOtp(otp) {
+  return crypto.createHash('sha256').update(otp).digest('hex');
 }
 
 function signTokens(user) {
@@ -307,9 +311,10 @@ async function forgotPassword(req, res) {
     });
     const expiresIn = new Date(Date.now() + 5 * 60 * 1000);
 
+    const otpHash = hashOtp(otp);
     const updateResult = await pool.query(
       'UPDATE users SET otp = $1, otp_expires_at = $2 WHERE LOWER(email) = LOWER($3)',
-      [otp, expiresIn, email]
+      [otpHash, expiresIn, email]
     );
 
     if (updateResult.rowCount === 0) {
@@ -348,9 +353,10 @@ async function verifyOtp(req, res) {
     }
 
     const user = verifyOTPResult.rows[0];
-    const otpBuf = Buffer.from(user.otp || '', 'utf-8');
-    const inputBuf = Buffer.from(otp);
-    if(!user.otp || otpBuf.length !== inputBuf.length || !crypto.timingSafeEqual(otpBuf, inputBuf)) {
+    const inputHash = hashOtp(otp);
+    const storedBuf = Buffer.from(user.otp || '', 'utf-8');
+    const inputBuf = Buffer.from(inputHash, 'utf-8');
+    if(!user.otp || storedBuf.length !== inputBuf.length || !crypto.timingSafeEqual(storedBuf, inputBuf)) {
       return res.status(400).json({ error: 'Mã OTP không chính xác' });
     }
 
