@@ -39,12 +39,12 @@ function hashOtp(otp) {
 
 function signTokens(user) {
   const accessToken = jwt.sign(
-    { id: user.user_id, account: user.user_account, email: user.email, role: user.role || 'user', type: 'access' },
+    { id: user.id, account: user.user_account, email: user.email, role: user.role || 'user', type: 'access' },
     ACCESS_SECRET,
     { expiresIn: ACCESS_EXPIRES }
   );
   const refreshToken = jwt.sign(
-    { id: user.user_id, type: 'refresh' },
+    { id: user.id, type: 'refresh' },
     REFRESH_SECRET,
     { expiresIn: REFRESH_EXPIRES, jwtid: crypto.randomUUID() }
   );
@@ -89,7 +89,7 @@ async function rotateRefreshToken(oldTokenHash, userId) {
     }
 
     const userResult = await client.query(
-      `SELECT user_id, user_account, email, role FROM users WHERE user_id = $1`,
+      `SELECT id, user_account, email, role FROM users WHERE id = $1`,
       [userId]
     );
     const user = userResult.rows[0];
@@ -137,7 +137,7 @@ async function login(req, res) {
 
   try {
     const result = await pool.query(
-      `SELECT user_id, user_account, hashpasword, email, role, is_active FROM users WHERE LOWER(user_account) = LOWER($1) OR LOWER(email) = LOWER($1)`,
+      `SELECT id, user_account, hashpasword, email, role, is_active FROM users WHERE LOWER(user_account) = LOWER($1) OR LOWER(email) = LOWER($1)`,
       [account]
     );
 
@@ -160,22 +160,22 @@ async function login(req, res) {
     if (needsRehash(user.hashpasword)) {
       const upgraded = await hashPassword(password);
       await pool.query(
-        'UPDATE users SET hashpasword = $1 WHERE user_id = $2',
-        [upgraded, user.user_id]
+        'UPDATE users SET hashpasword = $1 WHERE id = $2',
+        [upgraded, user.id]
       );
       user.hashpasword = upgraded;
     }
 
-    const { user_id, user_account, email, role } = user;
+    const { id, user_account, email, role } = user;
     const { accessToken, refreshToken } = signTokens(user);
-    await storeRefreshToken(user_id, refreshToken);
+    await storeRefreshToken(id, refreshToken);
     setRefreshCookie(res, refreshToken);
     setAccessCookie(res, accessToken);
 
     res.json({
       message: 'Đăng nhập thành công',
       accessToken,
-      user: { user_id, user_account, email, role }
+      user: { id, user_account, email, role }
     });
   } catch (err) {
     console.error('Login error:', err);
@@ -204,7 +204,7 @@ async function register(req, res) {
 
   try {
     const emailCheck = await pool.query(
-      'SELECT user_id, is_active FROM users WHERE LOWER(email) = LOWER($1)',
+      'SELECT id, is_active FROM users WHERE LOWER(email) = LOWER($1)',
       [email]
     );
     if (emailCheck.rows.length > 0) {
@@ -216,7 +216,7 @@ async function register(req, res) {
 
     const hashedPassword = await hashPassword(password);
     const result = await pool.query(
-      `INSERT INTO users (user_account, hashpasword, email) VALUES ($1, $2, $3) RETURNING user_id, user_account, email, role`,
+      `INSERT INTO users (user_account, hashpasword, email) VALUES ($1, $2, $3) RETURNING id, user_account, email, role`,
       [account, hashedPassword, email]
     );
     res.status(201).json(result.rows[0]);
@@ -233,7 +233,7 @@ async function register(req, res) {
 async function getProfile(req, res) {
   try {
     const result = await pool.query(
-      `SELECT user_id, user_account, email, role FROM users WHERE user_id = $1`,
+      `SELECT id, user_account, email, role FROM users WHERE id = $1`,
       [req.userID]
     );
 
@@ -258,7 +258,7 @@ async function changePassword(req, res) {
 
   try {
     const result = await pool.query(
-      `SELECT hashpasword FROM users WHERE user_id = $1`,
+      `SELECT hashpasword FROM users WHERE id = $1`,
       [req.userID]
     );
 
@@ -275,7 +275,7 @@ async function changePassword(req, res) {
 
     const newHashedPassword = await hashPassword(newPassword);
     await pool.query(
-      `UPDATE users SET hashpasword = $1 WHERE user_id = $2`,
+      `UPDATE users SET hashpasword = $1 WHERE id = $2`,
       [newHashedPassword, req.userID]
     );
 
@@ -295,7 +295,7 @@ async function forgotPassword(req, res) {
 
   try {
     const userResult = await pool.query(
-      'SELECT email, user_id FROM users WHERE LOWER(email) = LOWER($1)',
+      'SELECT email, id FROM users WHERE LOWER(email) = LOWER($1)',
       [email]
     );
 
@@ -432,7 +432,7 @@ async function googleAuthCallback(req, res) {
     const account = `${email}`;
 
     let userResult = await pool.query(
-      `SELECT user_id, user_account, email, role, is_active FROM users WHERE email = $1 OR user_account = $2`,
+      `SELECT id, user_account, email, role, is_active FROM users WHERE email = $1 OR user_account = $2`,
       [email, account]
     );
 
@@ -440,7 +440,7 @@ async function googleAuthCallback(req, res) {
     if (userResult.rows.length === 0) {
       const dummyPassword = await hashPassword(`google_${googleUser.id}_${Date.now()}`);
       const insertResult = await pool.query(
-        `INSERT INTO users (user_account, hashpasword, email) VALUES ($1, $2, $3) RETURNING user_id, user_account, email, role`,
+        `INSERT INTO users (user_account, hashpasword, email) VALUES ($1, $2, $3) RETURNING id, user_account, email, role`,
         [account, dummyPassword, email]
       );
       user = insertResult.rows[0];
@@ -452,7 +452,7 @@ async function googleAuthCallback(req, res) {
       }
     }
     const oneTimeCode = crypto.randomBytes(32).toString('hex');
-    oauthCodes.set(oneTimeCode, { userId: user.user_id, expiresAt: Date.now() + 60 * 1000 });
+    oauthCodes.set(oneTimeCode, { userId: user.id, expiresAt: Date.now() + 60 * 1000 });
 
     const clientUrl = process.env.CLIENT_URL || '';
     res.redirect(`${clientUrl}/auth/callback?code=${oneTimeCode}`);
@@ -481,7 +481,7 @@ async function exchange(req, res) {
 
   try {
     const user = await pool.query(
-      `SELECT user_id, user_account, email, role, is_active FROM users WHERE user_id = $1`,
+      `SELECT id, user_account, email, role, is_active FROM users WHERE id = $1`,
       [record.userId]
     );
     if (user.rows.length === 0) {
@@ -493,14 +493,14 @@ async function exchange(req, res) {
       return res.status(403).json({ error: 'Tài khoản đã bị khóa. Vui lòng liên hệ quản trị viên.' });
     }
     const { accessToken, refreshToken } = signTokens(foundUser);
-    await storeRefreshToken(foundUser.user_id, refreshToken);
+    await storeRefreshToken(foundUser.id, refreshToken);
     setRefreshCookie(res, refreshToken);
     setAccessCookie(res, accessToken);
 
     res.json({
       message: 'Đăng nhập thành công',
       accessToken,
-      user: { user_id: foundUser.user_id, user_account: foundUser.user_account, email: foundUser.email, role: foundUser.role }
+      user: { id: foundUser.id, user_account: foundUser.user_account, email: foundUser.email, role: foundUser.role }
     });
   } catch (err) {
     console.error('Exchange error:', err);
@@ -532,7 +532,7 @@ async function refresh(req, res) {
     setAccessCookie(res, result.tokens.accessToken);
     res.json({
       accessToken: result.tokens.accessToken,
-      user: { user_id: result.user.user_id, user_account: result.user.user_account, email: result.user.email, role: result.user.role }
+      user: { id: result.user.id, user_account: result.user.user_account, email: result.user.email, role: result.user.role }
     });
   } catch (err) {
     clearRefreshCookie(res);
@@ -558,7 +558,7 @@ async function logout(req, res) {
 // GET /api/users/me — quick auth check (trả thông tin từ JWT, không query DB)
 function me(req, res) {
   res.json({
-    user_id: req.userID,
+    id: req.userID,
     user_account: req.userAccount,
     email: req.userEmail,
     role: req.userRole

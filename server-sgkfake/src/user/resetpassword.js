@@ -12,7 +12,7 @@ module.exports = function (app, pool, bcrypt, hashPassword) {
         }
 
         try {
-            let queryText = 'SELECT user_id, user_account, hashpasword FROM users';
+            let queryText = 'SELECT id, user_account, hashpasword FROM users';
             let queryParams = [];
 
             if (username) {
@@ -46,8 +46,8 @@ module.exports = function (app, pool, bcrypt, hashPassword) {
 
             const hashedPassword = bcrypt ? await bcrypt.hash(newPassword, 10) : hashPassword(oldPassword);
             await pool.query(
-                'UPDATE users SET hashpasword = $1 WHERE user_id = $2',
-                [hashedPassword, targetUser.user_id]
+                'UPDATE users SET hashpasword = $1 WHERE id = $2',
+                [hashedPassword, targetUser.id]
             );
 
             return res.status(200).json({ message: 'Đặt lại mật khẩu thành công!' });

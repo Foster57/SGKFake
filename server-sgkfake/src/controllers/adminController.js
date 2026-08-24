@@ -157,7 +157,7 @@ async function deleteSubject(req, res) {
 async function listUsers(req, res) {
   try {
     const result = await pool.query(
-      'SELECT user_id, user_account, email, role, is_active FROM users WHERE is_active = true ORDER BY user_id'
+      'SELECT id, user_account, email, role, is_active FROM users WHERE is_active = true ORDER BY id'
     );
     res.json(result.rows);
   } catch (err) {
@@ -173,12 +173,12 @@ async function updateUserRole(req, res) {
     if (!role || !['user', 'admin'].includes(role)) {
       return res.status(400).json({ error: 'Role không hợp lệ (chỉ chấp nhận user hoặc admin)' });
     }
-    const existing = await pool.query('SELECT user_id FROM users WHERE user_id = $1 AND is_active = true', [userId]);
+    const existing = await pool.query('SELECT id FROM users WHERE id = $1 AND is_active = true', [userId]);
     if (existing.rows.length === 0) {
       return res.status(404).json({ error: 'Không tìm thấy người dùng' });
     }
     const result = await pool.query(
-      'UPDATE users SET role = $1 WHERE user_id = $2 RETURNING user_id, user_account, email, role',
+      'UPDATE users SET role = $1 WHERE id = $2 RETURNING id, user_account, email, role',
       [role, userId]
     );
     res.json(result.rows[0]);
@@ -192,7 +192,7 @@ async function deleteUser(req, res) {
   const userId = req.params.id;
   try {
     const result = await pool.query(
-      'UPDATE users SET is_active = false WHERE user_id = $1 AND is_active = true RETURNING user_id',
+      'UPDATE users SET is_active = false WHERE id = $1 AND is_active = true RETURNING id',
       [userId]
     );
     if (result.rowCount === 0) {

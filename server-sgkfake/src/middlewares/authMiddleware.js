@@ -15,7 +15,7 @@ function authenticate(req, res, next) {
             return res.status(403).json({ error: 'Token không hợp lệ' });
         }
 
-        pool.query('SELECT is_active FROM users WHERE user_id = $1', [decoded.id])
+        pool.query('SELECT is_active FROM users WHERE id = $1', [decoded.id])
             .then(result => {
                 if (result.rows.length === 0 || result.rows[0].is_active === false) {
                     return res.status(403).json({ error: 'Tài khoản đã bị khóa' });

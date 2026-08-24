@@ -32,7 +32,7 @@ function requireAuthPage(req, res, next) {
     if (!user) {
         return res.redirect('/login');
     }
-    pool.query('SELECT is_active FROM users WHERE user_id = $1', [user.id])
+    pool.query('SELECT is_active FROM users WHERE id = $1', [user.id])
         .then(result => {
             if (result.rows.length === 0 || result.rows[0].is_active === false) {
                 return res.redirect('/login?error=account_disabled');
@@ -57,7 +57,7 @@ function requireAdminPage(req, res, next) {
     if (user.role !== 'admin') {
         return res.redirect('/403');
     }
-    pool.query('SELECT is_active FROM users WHERE user_id = $1', [user.id])
+    pool.query('SELECT is_active FROM users WHERE id = $1', [user.id])
         .then(result => {
             if (result.rows.length === 0 || result.rows[0].is_active === false) {
                 return res.redirect('/login?error=account_disabled');

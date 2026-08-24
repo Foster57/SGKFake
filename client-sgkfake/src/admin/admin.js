@@ -11,6 +11,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ==================== HELPERS ====================
+    function escapeHtml(str) {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
+
     async function apiFetch(url, options = {}) {
         try {
             const res = await SGKAuth.authFetch(url, options);
@@ -401,16 +407,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
             return `
                 <tr>
-                    <td class="id-cell">${user.user_id}</td>
+                    <td class="id-cell">${user.id}</td>
                     <td><strong>${user.user_account}</strong></td>
                     <td>${user.email || ''}</td>
                     <td>${roleBadge}</td>
                     <td>
                         <div class="action-group">
-                            <button class="btn-icon edit" title="Đổi vai trò" onclick="openEditUser(${user.user_id}, '${user.user_account.replace(/'/g, "\\'")}', '${(user.email || '').replace(/'/g, "\\'")}', '${user.role}')">
+                            <button class="btn-icon edit" title="Đổi vai trò" onclick="openEditUser(${user.id}, '${user.user_account.replace(/'/g, "\\'")}', '${(user.email || '').replace(/'/g, "\\'")}', '${user.role}')">
                                 <i class="ri-shield-user-line"></i>
                             </button>
-                            <button class="btn-icon delete" title="Xóa" onclick="confirmDeleteUser(${user.user_id}, '${user.user_account.replace(/'/g, "\\'")}')">
+                            <button class="btn-icon delete" title="Xóa" onclick="confirmDeleteUser(${user.id}, '${user.user_account.replace(/'/g, "\\'")}')">
                                 <i class="ri-delete-bin-line"></i>
                             </button>
                         </div>
