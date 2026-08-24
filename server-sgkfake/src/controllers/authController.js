@@ -4,6 +4,7 @@ const otpGenerator = require('otp-generator');
 const pool = require('../config/db');
 const transporter = require('../config/mailer');
 const { hashPassword, comparePassword, needsRehash } = require('../utils/hash');
+const logger = require('../utils/logger');
 
 const ACCESS_SECRET = process.env.JWT_SECRET || 'sgkfake_secret_key_2026';
 const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'sgkfake_refresh_secret_2026';
@@ -79,6 +80,7 @@ async function rotateRefreshToken(oldTokenHash, userId) {
         [oldTokenHash, userId]
       );
       if (check.rows.length > 0 && check.rows[0].revoked_at) {
+        logger.warn('Security: Token reuse detected! Revoking all sessions for user.', { userId });
         await client.query(
           `UPDATE refresh_tokens SET revoked_at = NOW() WHERE user_id = $1 AND revoked_at IS NULL`,
           [userId]
@@ -142,18 +144,21 @@ async function login(req, res) {
     );
 
     if (result.rows.length === 0) {
+      logger.warn('Security: Login failed (Account not found)', { account });
       return res.status(401).json({ error: 'Tài khoản hoặc mật khẩu không chính xác!' });
     }
 
     const user = result.rows[0];
 
     if (user.is_active === false) {
+      logger.warn('Security: Login attempt on locked account', { account, userId: user.id });
       return res.status(403).json({ error: 'Tài khoản đã bị khóa. Vui lòng liên hệ quản trị viên.' });
     }
 
     const isMatch = await comparePassword(password, user.hashpasword);
 
     if (!isMatch) {
+      logger.warn('Security: Login failed (Wrong password)', { account, userId: user.id });
       return res.status(401).json({ error: 'Tài khoản hoặc mật khẩu không chính xác!' });
     }
 
@@ -172,14 +177,16 @@ async function login(req, res) {
     setRefreshCookie(res, refreshToken);
     setAccessCookie(res, accessToken);
 
+    logger.info('User logged in successfully', { userId: id, account: user_account });
+
     res.json({
       message: 'Đăng nhập thành công',
       accessToken,
       user: { id, user_account, email, role }
     });
   } catch (err) {
-    console.error('Login error:', err);
-    res.status(500).json({ error: 'Database error' });
+    logger.error('System: Login error', { error: err.message, stack: err.stack, account });
+    res.status(500).json({ error: 'Lỗi máy chủ' });
   }
 }
 
@@ -221,7 +228,7 @@ async function register(req, res) {
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
-    console.error('Register error:', err);
+    logger.error('Register error', { error: err.message });
     if (err.code === '23505') {
       return res.status(409).json({ error: 'Tài khoản này đã tồn tại!' });
     }
@@ -243,7 +250,7 @@ async function getProfile(req, res) {
 
     res.json(result.rows[0]);
   } catch (err) {
-    console.error('Get profile error:', err);
+    logger.error('Get profile error', { error: err.message });
     res.status(500).json({ error: 'Database error' });
   }
 }
@@ -281,7 +288,7 @@ async function changePassword(req, res) {
 
     res.json({ message: 'Đổi mật khẩu thành công!' });
   } catch (err) {
-    console.error('Change password error:', err);
+    logger.error('Change password error', { error: err.message });
     res.status(500).json({ error: 'Database error' });
   }
 }
@@ -330,7 +337,7 @@ async function forgotPassword(req, res) {
 
     res.json({ message: 'Mã OTP đã được gửi đến email của bạn. Vui lòng kiểm tra hộp thư!', email });
   } catch (err) {
-    console.error('Forgot password error:', err);
+    logger.error('Forgot password error', { error: err.message });
     res.status(500).json({ error: 'Lỗi máy chủ khi xử lý quên mật khẩu' });
   }
 }
@@ -356,11 +363,13 @@ async function verifyOtp(req, res) {
     const inputHash = hashOtp(otp);
     const storedBuf = Buffer.from(user.otp || '', 'utf-8');
     const inputBuf = Buffer.from(inputHash, 'utf-8');
-    if(!user.otp || storedBuf.length !== inputBuf.length || !crypto.timingSafeEqual(storedBuf, inputBuf)) {
+    if (!user.otp || storedBuf.length !== inputBuf.length || !crypto.timingSafeEqual(storedBuf, inputBuf)) {
+      logger.warn('Security: OTP verification failed', { email, userId: user.id });
       return res.status(400).json({ error: 'Mã OTP không chính xác' });
     }
 
     if (new Date() > new Date(user.otp_expires_at)) {
+      logger.warn('Security: Expired OTP used', { email, userId: user.id });
       await pool.query(
         'UPDATE users SET otp = NULL, otp_expires_at = NULL WHERE LOWER(email) = LOWER($1)',
         [email]

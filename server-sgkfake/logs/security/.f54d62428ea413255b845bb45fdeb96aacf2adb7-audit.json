@@ -1,0 +1,15 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 30
+    },
+    "auditLog": "/home/foster/SGKFake/server-sgkfake/logs/security/.f54d62428ea413255b845bb45fdeb96aacf2adb7-audit.json",
+    "files": [
+        {
+            "date": 1787543040476,
+            "name": "/home/foster/SGKFake/server-sgkfake/logs/security/security-2026-08-24.log",
+            "hash": "110fb709a1b8fc55d78e82325fd217e0716c3b7282638dede4617744c91e6358"
+        }
+    ],
+    "hashType": "sha256"
+}

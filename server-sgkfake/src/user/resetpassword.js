@@ -1,3 +1,5 @@
+const logger = require('../../src/utils/logger');
+
 module.exports = function (app, pool, bcrypt, hashPassword) {
     app.post('/api/user/reset-password', async (req, res) => {
         const { user_account, account, oldPassword, newPassword, confirmPassword } = req.body;
@@ -22,6 +24,7 @@ module.exports = function (app, pool, bcrypt, hashPassword) {
 
             const result = await pool.query(queryText, queryParams);
             if (result.rows.length === 0) {
+                logger.warn('Security: Reset password failed - User not found', { username });
                 return res.status(404).json({ error: 'Không tìm thấy người dùng' });
             }
 
@@ -41,6 +44,7 @@ module.exports = function (app, pool, bcrypt, hashPassword) {
             }
 
             if (!targetUser) {
+                logger.warn('Security: Reset password failed - Wrong old password', { username });
                 return res.status(400).json({ error: 'Mật khẩu cũ không chính xác' });
             }
 
@@ -52,7 +56,7 @@ module.exports = function (app, pool, bcrypt, hashPassword) {
 
             return res.status(200).json({ message: 'Đặt lại mật khẩu thành công!' });
         } catch (error) {
-            console.error('Reset password error:', error);
+            logger.error('System: Reset password error', { error: error.message, username });
             return res.status(500).json({ error: 'Lỗi máy chủ khi đổi mật khẩu' });
         }
     });

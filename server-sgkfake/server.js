@@ -11,6 +11,19 @@ const authController = require('./src/controllers/authController');
 
 const app = express();
 
+// 1. Ép HTTPS khi chạy production (sau reverse proxy như Nginx/Render/Railway)
+app.set('trust proxy', 1);
+app.use((req, res, next) => {
+  // Chỉ ép HTTPS trên môi trường production
+  if (process.env.NODE_ENV === 'production') {
+    if (req.secure || req.headers['x-forwarded-proto'] === 'https') {
+      return next();
+    }
+    return res.redirect(`https://${req.headers.host}${req.url}`);
+  }
+  next();
+});
+
 // Body Parser Middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

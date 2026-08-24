@@ -1,0 +1,7 @@
+{"account":"24022745","level":"warn","message":"Security: Login failed (Wrong password)","timestamp":"2026-08-24 10:59:06","userId":2}
+{"account":"24022745","level":"warn","message":"Security: Login failed (Wrong password)","timestamp":"2026-08-24 10:59:10","userId":2}
+{"error":"value too long for type character varying(10)","level":"error","message":"Forgot password error","timestamp":"2026-08-24 10:59:46"}
+{"error":"value too long for type character varying(10)","level":"error","message":"Forgot password error","timestamp":"2026-08-24 11:01:16"}
+{"error":"value too long for type character varying(10)","level":"error","message":"Forgot password error","timestamp":"2026-08-24 11:03:54"}
+{"ip":"::1","level":"warn","message":"Security: Rate limit exceeded for API","timestamp":"2026-08-24 11:06:43","url":"/login"}
+{"ip":"::1","level":"warn","message":"Security: Rate limit exceeded for API","timestamp":"2026-08-24 11:07:05","url":"/login"}
