@@ -5,3 +5,6 @@
 {"error":"value too long for type character varying(10)","level":"error","message":"Forgot password error","timestamp":"2026-08-24 11:03:54"}
 {"ip":"::1","level":"warn","message":"Security: Rate limit exceeded for API","timestamp":"2026-08-24 11:06:43","url":"/login"}
 {"ip":"::1","level":"warn","message":"Security: Rate limit exceeded for API","timestamp":"2026-08-24 11:07:05","url":"/login"}
+{"account":"tienchet2006","level":"warn","message":"Security: Login failed (Wrong password)","timestamp":"2026-08-24 16:32:33","userId":5}
+{"error":"duplicate key value violates unique constraint \"users_user_account_key\"","level":"error","message":"Register error","timestamp":"2026-08-24 16:33:35"}
+{"account":"tienchet2006tien","level":"warn","message":"Security: Login failed (Account not found)","timestamp":"2026-08-24 16:37:08"}

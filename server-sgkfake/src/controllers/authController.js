@@ -387,6 +387,10 @@ async function verifyOtp(req, res) {
     }
 
     res.json({ message: 'Xác thực OTP thành công!' });
+    await pool.query(
+      'UPDATE users SET otp = NULL, otp_expires_at = NULL WHERE LOWER(email) = LOWER($1)',
+      [email]
+    );
   } catch (err) {
     console.error('Verify OTP error:', err);
     res.status(500).json({ error: 'Lỗi máy chủ khi xác thực OTP' });
@@ -545,6 +549,7 @@ async function refresh(req, res) {
     });
   } catch (err) {
     clearRefreshCookie(res);
+    clearAccessCookie(res);
     console.error('Refresh error:', err);
     return res.status(403).json({ error: 'Refresh token không hợp lệ hoặc đã hết hạn' });
   }

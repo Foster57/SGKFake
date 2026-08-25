@@ -8,3 +8,11 @@
 {"account":"24022745","level":"info","message":"User logged in successfully","timestamp":"2026-08-24 11:05:51","userId":2}
 {"ip":"::1","level":"warn","message":"Security: Rate limit exceeded for API","timestamp":"2026-08-24 11:06:43","url":"/login"}
 {"ip":"::1","level":"warn","message":"Security: Rate limit exceeded for API","timestamp":"2026-08-24 11:07:05","url":"/login"}
+{"account":"24022745","level":"info","message":"User logged in successfully","timestamp":"2026-08-24 16:31:35","userId":2}
+{"account":"tienchet2006","level":"warn","message":"Security: Login failed (Wrong password)","timestamp":"2026-08-24 16:32:33","userId":5}
+{"account":"tienchet2006","level":"info","message":"User logged in successfully","timestamp":"2026-08-24 16:32:36","userId":5}
+{"error":"duplicate key value violates unique constraint \"users_user_account_key\"","level":"error","message":"Register error","timestamp":"2026-08-24 16:33:35"}
+{"account":"1","level":"info","message":"User logged in successfully","timestamp":"2026-08-24 16:33:44","userId":15}
+{"account":"tienchet2006tien","level":"warn","message":"Security: Login failed (Account not found)","timestamp":"2026-08-24 16:37:08"}
+{"account":"tienchet2006","level":"info","message":"User logged in successfully","timestamp":"2026-08-24 16:37:13","userId":5}
+{"account":"tienchet2006","level":"info","message":"User logged in successfully","timestamp":"2026-08-24 17:16:40","userId":5}
