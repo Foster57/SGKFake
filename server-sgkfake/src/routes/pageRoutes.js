@@ -57,6 +57,11 @@ router.get('/user/reset-password', noCacheHeaders, requireAuthPage, (req, res) =
     res.sendFile(path.join(clientDir, 'pages', 'user-pages', 'user-resetpassword.html'));
 });
 
+router.get('/user/games', noCacheHeaders, requireAuthPage, (req, res) => {
+    res.sendFile(path.join(clientDir, 'pages', 'user-pages', 'games.html'));
+});
+
+
 // ==================== PROTECTED ADMIN ROUTES ====================
 
 router.get('/admin', noCacheHeaders, requireAdminPage, (req, res) => {

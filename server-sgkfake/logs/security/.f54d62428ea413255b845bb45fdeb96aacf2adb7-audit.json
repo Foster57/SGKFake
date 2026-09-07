@@ -9,6 +9,21 @@
             "date": 1787543040476,
             "name": "/home/foster/SGKFake/server-sgkfake/logs/security/security-2026-08-24.log",
             "hash": "110fb709a1b8fc55d78e82325fd217e0716c3b7282638dede4617744c91e6358"
+        },
+        {
+            "date": 1787812970115,
+            "name": "/home/foster/SGKFake/server-sgkfake/logs/security/security-2026-08-27.log",
+            "hash": "ce0aafb08e13d91c271f2a8a371d1fdf85e72be5042752d495e934024bc829bf"
+        },
+        {
+            "date": 1788503878540,
+            "name": "/home/foster/SGKFake/server-sgkfake/logs/security/security-2026-09-04.log",
+            "hash": "63a682754d4473ae88b5b0e3a54db5722d870c2ac1b08c6e8500d2d4e73be896"
+        },
+        {
+            "date": 1788679645472,
+            "name": "/home/foster/SGKFake/server-sgkfake/logs/security/security-2026-09-06.log",
+            "hash": "5bf4a4d3ca764223590403f3403df993a02108913db9e6e08061035a47dec169"
         }
     ],
     "hashType": "sha256"

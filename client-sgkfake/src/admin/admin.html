@@ -266,6 +266,39 @@
             </div>
         </div>
     </div>
+    <!--Quản lý đơn hàng-->
+    <div class="admin-section" id="section-orders">
+        <div class="admin-page-header">
+            <div>
+                <h1 class="admin-page-title">Quản lý đơn hàng</h1>
+                <p class="admin-page-subtitle">Xem danh sách đơn hàng</p>
+            </div>
+        </div>
+        <div class="admin-toolbar">
+            <div class="admin-search">
+                <i class="ri-search-line"></i>
+                <input type="text" id="orderSearch" placeholder="Tìm đơn hàng...">
+            </div>
+        </div>
+        <div class="admin-table-wrapper">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Tài khoản</th>
+                        <th>Email</th>
+                        <th>Vai trò</th>
+                        <th>Hành động</th>
+                    </tr>
+                </thead>
+                <tbody id="orderTableBody"></tbody>
+            </table>
+            <div class="admin-empty" id="orderEmpty" style="display:none;">
+                <i class="ri-user-line"></i>
+                <p>Chưa có đơn hàng nào</p>
+            </div>
+        </div>
+    </div>
 
     <!-- Scripts -->
     <script src="/src/auth.js"></script>

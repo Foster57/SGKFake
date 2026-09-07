@@ -6,9 +6,14 @@
     "auditLog": "/home/foster/SGKFake/server-sgkfake/logs/app/.c4db160c9adfa59d31b9e688357f2fd506bcb5e3-audit.json",
     "files": [
         {
-            "date": 1787543040477,
-            "name": "/home/foster/SGKFake/server-sgkfake/logs/app/app-2026-08-24.log",
-            "hash": "22496946a16b7808a0ae315dc2a7202654d6d418d1f750adcd92a841f6313900"
+            "date": 1788503878542,
+            "name": "/home/foster/SGKFake/server-sgkfake/logs/app/app-2026-09-04.log",
+            "hash": "2ae617573fdb555dd5a27a022f7e6d2b608507b908ec18fbf77ee721ea00329f"
+        },
+        {
+            "date": 1788679645473,
+            "name": "/home/foster/SGKFake/server-sgkfake/logs/app/app-2026-09-06.log",
+            "hash": "dfd6fde0b49e351f085970590e6988dc7b86faa0c1d164bb7bd0e5ac7161bf26"
         }
     ],
     "hashType": "sha256"

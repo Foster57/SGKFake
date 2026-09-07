@@ -505,3 +505,43 @@ document.addEventListener('DOMContentLoaded', () => {
     loadSubjectsCache();
     loadBooks();
 });
+
+// ORDERS CACHE
+
+let orderAll = [];
+
+async function loadOrderAll() {
+    try {
+        const respone = await apiFetch(`/api/admin/users/orders`);
+        const data = await respone.json();
+        orderAll = data.orders || [];
+    } catch (err) {
+        console.error('Failed to load orders', err);
+    }
+}
+
+function renderOrders() {
+    const tableBody = document.getElementById('orderTableBody');
+    const empty = document.getElementById('orderEmpty');
+
+    if (!orderAll.length) {
+        tableBody.innerHTML = '';
+        empty.style.display = 'block';
+        return;
+    }
+
+    empty.style.display = 'none';
+
+    tableBody.innerHTML = orderAll.map(order => `
+        <tr>
+            <td>${order.id}</td>
+            <td>${order.user_account}</td>
+            <td>${new Date(order.created_at).toLocaleString()}</td>
+            <td>${order.status}</td>
+            <td>${order.total_price.toLocaleString()}đ</td>
+        </tr>
+    `).join('');
+}
+
+
+
